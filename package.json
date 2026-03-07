@@ -1,0 +1,28 @@
+{
+  "name": "endpoint",
+  "version": "1.0.0",
+  "description": "Endpoint",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon ./dist/server.js",
+    "watch": "tsc -w"
+  },
+  "author": "Kaung Htet Lwin",
+  "license": "ISC",
+  "dependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.17.4",
+    "nodemon": "^3.1.10",
+    "express-validator": "^7.3.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.4",
+    "@types/node": "^24.9.1",
+    "typescript": "^5.9.3"
+  }
+}
