@@ -53,7 +53,6 @@ const handleError = (res, err) => {
     console.error("Endpoint error:", err);
     res.json(responseStatus_1.default.UNKNOWN(err.message));
 };
-// GET /features/list
 router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { current = 1, limit = 10 } = req.body;
@@ -67,7 +66,6 @@ router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         handleError(res, err);
     }
 }));
-// POST /features
 router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = yield FeaturesModel.createFeature(req.body);
@@ -77,7 +75,6 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         handleError(res, err);
     }
 }));
-// PUT /features/:id
 router.put("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);
@@ -88,7 +85,6 @@ router.put("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         handleError(res, err);
     }
 }));
-// DELETE /features/:id
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);

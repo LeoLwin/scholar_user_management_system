@@ -54,7 +54,6 @@ const handleError = (res, err) => {
     console.error("Endpoint error:", err);
     res.json(responseStatus_1.default.UNKNOWN(err.message));
 };
-// GET /permissions/list
 router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { current = 1, limit = 10 } = req.body;
@@ -68,7 +67,6 @@ router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         handleError(res, err);
     }
 }));
-// POST /permissions
 router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = yield PermissionModel.createPermission(req.body);
@@ -78,7 +76,6 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         handleError(res, err);
     }
 }));
-// DELETE /permissions/:id
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);
@@ -89,7 +86,6 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         handleError(res, err);
     }
 }));
-// POST /roles-permissions
 router.post("/roles-permissions", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = yield RolePermissionModel.assignPermissionToRole(req.body);
@@ -99,7 +95,6 @@ router.post("/roles-permissions", (req, res) => __awaiter(void 0, void 0, void 0
         handleError(res, err);
     }
 }));
-// GET /roles-permissions/:roleId
 router.get("/roles-permissions/:roleId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const roleId = Number(req.params.roleId);

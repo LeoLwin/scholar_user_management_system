@@ -8,7 +8,6 @@ const handleError = (res: Response, err: Error) => {
   res.json(ResponseStatus.UNKNOWN(err.message));
 };
 
-// GET /features/list
 router.get("/list", async (req, res) => {
   try {
     const { current = 1, limit = 10 } = req.body;
@@ -22,7 +21,6 @@ router.get("/list", async (req, res) => {
   }
 });
 
-// POST /features
 router.post("/", async (req, res) => {
   try {
     const result = await FeaturesModel.createFeature(req.body);
@@ -32,7 +30,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// PUT /features/:id
 router.put("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -43,7 +40,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE /features/:id
 router.delete("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);

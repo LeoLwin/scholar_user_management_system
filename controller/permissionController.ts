@@ -9,7 +9,6 @@ const handleError = (res: Response, err: Error) => {
   res.json(ResponseStatus.UNKNOWN(err.message));
 };
 
-// GET /permissions/list
 router.get("/list", async (req, res) => {
   try {
     const { current = 1, limit = 10 } = req.body;
@@ -23,7 +22,6 @@ router.get("/list", async (req, res) => {
   }
 });
 
-// POST /permissions
 router.post("/", async (req, res) => {
   try {
     const result = await PermissionModel.createPermission(req.body);
@@ -33,7 +31,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// DELETE /permissions/:id
 router.delete("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -44,7 +41,6 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// POST /roles-permissions
 router.post("/roles-permissions", async (req, res) => {
   try {
     const result = await RolePermissionModel.assignPermissionToRole(req.body);
@@ -54,7 +50,6 @@ router.post("/roles-permissions", async (req, res) => {
   }
 });
 
-// GET /roles-permissions/:roleId
 router.get("/roles-permissions/:roleId", async (req, res) => {
   try {
     const roleId = Number(req.params.roleId);
