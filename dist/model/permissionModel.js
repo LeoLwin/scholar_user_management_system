@@ -38,17 +38,47 @@ const createPermission = (data) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.createPermission = createPermission;
-const getPermissions = () => __awaiter(void 0, void 0, void 0, function* () {
+const getPermissions = (current, limit) => __awaiter(void 0, void 0, void 0, function* () {
     let connection;
     try {
         connection = yield dbHelper_1.default.getConnection();
+        const offset = (current - 1) * limit;
+        // total count
+        const countQuery = `SELECT COUNT(*) AS total FROM permissions`;
+        const [countRows] = yield connection.query(countQuery);
+        const totalRecords = countRows[0].total;
+        if (totalRecords === 0) {
+            return responseStatus_1.default.OK({
+                by: [],
+                pagination: {
+                    currentPage: current,
+                    limit: limit,
+                    totalRecords: 0,
+                    totalPages: 0
+                }
+            });
+        }
+        const totalPages = Math.ceil(totalRecords / limit);
+        // get paginated data
         const query = `
-      SELECT p.id, p.name, f.name as feature
+      SELECT 
+        p.id, 
+        p.name, 
+        f.name AS feature
       FROM permissions p
       JOIN features f ON f.id = p.feature_id
+      LIMIT ? OFFSET ?
     `;
-        const [rows] = yield connection.query(query);
-        return responseStatus_1.default.OK(rows);
+        const [rows] = yield connection.query(query, [limit, offset]);
+        return responseStatus_1.default.OK({
+            by: rows,
+            pagination: {
+                currentPage: current,
+                limit: limit,
+                totalRecords,
+                totalPages
+            }
+        });
     }
     catch (err) {
         const msg = err instanceof Error ? err.message : String(err);

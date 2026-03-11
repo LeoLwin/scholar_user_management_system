@@ -13,12 +13,9 @@ const handleError = (res: Response, err: Error) => {
 
 router.get("/list", async (req, res) => {
   try {
-    const { current = 1, limit = 10 } = req.body;
-    const result = await PermissionModel.getPermissions();
-    let list = result.data || [];
-    const start = (current - 1) * limit;
-    const paginatedList = list.slice(start, start + limit);
-    res.json(ResponseStatus.OK({ total: list.length, list: paginatedList }));
+    const { current = 1, limit = 10 } = req.query;
+    const result = await PermissionModel.getPermissions(Number(current), Number(limit));
+    res.json(result);
   } catch (err) {
     handleError(res, err as Error);
   }
@@ -47,6 +44,7 @@ router.post("/roles-permissions", async (req, res) => {
   let connection;
   try {
     const { roleId, permissionIds } = req.body; // permissionIds = number[]
+    console.log("Req.body : ", req.body)
 
     if (!roleId || !Array.isArray(permissionIds) || !permissionIds.length) {
       return res.status(400).json({ message: "roleId and permissionIds required" });
@@ -62,7 +60,7 @@ router.post("/roles-permissions", async (req, res) => {
       });
       if (result.code !== "200") {
         await connection.rollback();
-        return res.status(500).json(result);
+        return res.json(result);
       }
     }
 

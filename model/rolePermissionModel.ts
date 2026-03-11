@@ -20,6 +20,8 @@ export const assignPermissionToRole = async (
       data.permissionId,
     ]);
 
+    console.log("result : ", result)
+
     if (result.affectedRows === 0) {
       return StatusCode.UNKNOWN("Failed to assign permission");
     }
@@ -70,7 +72,7 @@ export const getPermissionsByRole = async (roleId: number): Promise<ResponseStat
     const query = `
       SELECT p.id, p.name, f.name as feature
       FROM roles_permissions rp
-      JOIN permissions p ON p.id = rp.permission_id
+      JOIN permissions p ON p.id = rp.permissions_id
       JOIN features f ON f.id = p.feature_id
       WHERE rp.role_id = ?
     `;
@@ -84,4 +86,3 @@ export const getPermissionsByRole = async (roleId: number): Promise<ResponseStat
     if (connection) await connection.release();
   }
 };
-

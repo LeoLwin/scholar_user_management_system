@@ -27,19 +27,59 @@ export const createPermission = async (
   }
 };
 
-export const getPermissions = async (): Promise<ResponseStatus> => {
+export const getPermissions = async (
+  current: number,
+  limit: number
+): Promise<ResponseStatus> => {
   let connection;
+
   try {
     connection = await MySQL.getConnection();
 
+    const offset = (current - 1) * limit;
+
+    // total count
+    const countQuery = `SELECT COUNT(*) AS total FROM permissions`;
+    const [countRows]: [RowDataPacket[], any] = await connection.query(countQuery);
+    const totalRecords = countRows[0].total;
+
+    if (totalRecords === 0) {
+      return StatusCode.OK({
+        by: [],
+        pagination: {
+          currentPage: current,
+          limit: limit,
+          totalRecords: 0,
+          totalPages: 0
+        }
+      });
+    }
+
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    // get paginated data
     const query = `
-      SELECT p.id, p.name, f.name as feature
+      SELECT 
+        p.id, 
+        p.name, 
+        f.name AS feature
       FROM permissions p
       JOIN features f ON f.id = p.feature_id
+      LIMIT ? OFFSET ?
     `;
-    const [rows]: [RowDataPacket[], any] = await connection.query(query);
 
-    return StatusCode.OK(rows);
+    const [rows]: [RowDataPacket[], any] = await connection.query(query, [limit, offset]);
+
+    return StatusCode.OK({
+      by: rows,
+      pagination: {
+        currentPage: current,
+        limit: limit,
+        totalRecords,
+        totalPages
+      }
+    });
+
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return StatusCode.UNKNOWN(msg);

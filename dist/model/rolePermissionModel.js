@@ -25,6 +25,7 @@ const assignPermissionToRole = (connection, data) => __awaiter(void 0, void 0, v
             data.roleId,
             data.permissionId,
         ]);
+        console.log("result : ", result);
         if (result.affectedRows === 0) {
             return responseStatus_1.default.UNKNOWN("Failed to assign permission");
         }
@@ -63,7 +64,7 @@ const getPermissionsByRole = (roleId) => __awaiter(void 0, void 0, void 0, funct
         const query = `
       SELECT p.id, p.name, f.name as feature
       FROM roles_permissions rp
-      JOIN permissions p ON p.id = rp.permission_id
+      JOIN permissions p ON p.id = rp.permissions_id
       JOIN features f ON f.id = p.feature_id
       WHERE rp.role_id = ?
     `;
