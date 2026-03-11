@@ -48,12 +48,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const RoleModel = __importStar(require("../model/roleModel"));
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
+const roleValidator_1 = require("../validator/roleValidator");
+const commonValidator_1 = require("../validator/commonValidator");
 const router = express_1.default.Router();
 const handleError = (res, err) => {
     console.error("Endpoint error:", err);
     res.json(responseStatus_1.default.UNKNOWN(err.message));
 };
-router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/list", commonValidator_1.ListValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("Hit the role controller");
         const { current = 1, limit = 10 } = req.query;
@@ -67,6 +69,9 @@ router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);
+        if (!id) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Id is required."));
+        }
         const result = yield RoleModel.getRoleById(id);
         res.json(result);
     }
@@ -74,7 +79,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         handleError(res, err);
     }
 }));
-router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/", roleValidator_1.CreateRoleValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = yield RoleModel.createRole(req.body);
         res.json(result);
@@ -86,6 +91,9 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 router.put("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);
+        if (!id) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Id is required."));
+        }
         const result = yield RoleModel.updateRole(id, req.body);
         res.json(result);
     }
@@ -96,6 +104,9 @@ router.put("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);
+        if (!id) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Id is required."));
+        }
         const result = yield RoleModel.deleteRole(id);
         res.json(result);
     }

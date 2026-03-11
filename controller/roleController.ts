@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import * as RoleModel from "../model/roleModel";
 import ResponseStatus from "../helper/responseStatus";
+import { CreateRoleValidator } from "../validator/roleValidator";
+import { ListValidator } from "../validator/commonValidator";
 
 const router = express.Router();
 
@@ -9,7 +11,7 @@ const handleError = (res: Response, err: Error) => {
   res.json(ResponseStatus.UNKNOWN(err.message));
 };
 
-router.get("/list", async (req: Request, res: Response) => {
+router.get("/list", ListValidator, async (req: Request, res: Response) => {
   try {
     console.log("Hit the role controller")
     const { current = 1, limit = 10 } = req.query;
@@ -24,6 +26,9 @@ router.get("/list", async (req: Request, res: Response) => {
 router.get("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
+    }
     const result = await RoleModel.getRoleById(id);
     res.json(result);
   } catch (err) {
@@ -31,7 +36,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", CreateRoleValidator, async (req: Request, res: Response) => {
   try {
     const result = await RoleModel.createRole(req.body);
     res.json(result);
@@ -43,6 +48,9 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
+    }
     const result = await RoleModel.updateRole(id, req.body);
     res.json(result);
   } catch (err) {
@@ -53,6 +61,9 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
+    }
     const result = await RoleModel.deleteRole(id);
     res.json(result);
   } catch (err) {

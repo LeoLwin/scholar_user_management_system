@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import * as UserModel from "../model/userModel";
 import ResponseStatus from "../helper/responseStatus";
+import { CreateUserValidator } from "../validator/userValidator";
+import { ListValidator } from "../validator/commonValidator";
 
 const router = express.Router();
 
@@ -18,7 +20,7 @@ router.get("/test", async (req: Request, res: Response) => {
 });
 
 // GET /users/list
-router.get("/list", async (req: Request, res: Response) => {
+router.get("/list", ListValidator, async (req: Request, res: Response) => {
   try {
     const { current = 1, limit = 10 } = req.query;
     const result = await UserModel.getUsers(Number(current), Number(limit));
@@ -32,6 +34,9 @@ router.get("/list", async (req: Request, res: Response) => {
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
+    }
     const result = await UserModel.getUserById(id);
     res.json(result);
   } catch (err) {
@@ -40,7 +45,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // POST /users
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", CreateUserValidator, async (req: Request, res: Response) => {
   try {
     const result = await UserModel.createUser(req.body);
     res.json(result);
@@ -53,6 +58,9 @@ router.post("/", async (req: Request, res: Response) => {
 router.put("/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
+    }
     const result = await UserModel.updateUser(id, req.body);
     res.json(result);
   } catch (err) {
@@ -64,6 +72,9 @@ router.put("/:id", async (req: Request, res: Response) => {
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
+    }
     const result = await UserModel.deleteUser(id);
     res.json(result);
   } catch (err) {

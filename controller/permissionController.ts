@@ -11,7 +11,7 @@ const handleError = (res: Response, err: Error) => {
   res.json(ResponseStatus.UNKNOWN(err.message));
 };
 
-router.get("/list", async (req, res) => {
+router.get("/list", async (req: Request, res: Response) => {
   try {
     const { current = 1, limit = 10 } = req.query;
     const result = await PermissionModel.getPermissions(Number(current), Number(limit));
@@ -21,7 +21,7 @@ router.get("/list", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req: Request, res: Response) => {
   try {
     const result = await PermissionModel.createPermission(req.body);
     res.json(result);
@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const result = await PermissionModel.deletePermission(id);
@@ -40,7 +40,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.post("/roles-permissions", async (req, res) => {
+router.post("/roles-permissions", async (req: Request, res: Response) => {
   let connection;
   try {
     const { roleId, permissionIds } = req.body; // permissionIds = number[]
@@ -76,7 +76,7 @@ router.post("/roles-permissions", async (req, res) => {
   }
 });
 
-router.get("/roles-permissions/:roleId", async (req, res) => {
+router.get("/roles-permissions/:roleId", async (req: Request, res: Response) => {
   try {
     const roleId = Number(req.params.roleId);
     const result = await RolePermissionModel.getPermissionsByRole(roleId);

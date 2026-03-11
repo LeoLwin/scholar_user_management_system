@@ -48,6 +48,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const UserModel = __importStar(require("../model/userModel"));
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
+const userValidator_1 = require("../validator/userValidator");
+const commonValidator_1 = require("../validator/commonValidator");
 const router = express_1.default.Router();
 const handleError = (res, err) => {
     console.error("Endpoint error:", err);
@@ -62,7 +64,7 @@ router.get("/test", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 }));
 // GET /users/list
-router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/list", commonValidator_1.ListValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { current = 1, limit = 10 } = req.query;
         const result = yield UserModel.getUsers(Number(current), Number(limit));
@@ -76,6 +78,9 @@ router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);
+        if (!id) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Id is required."));
+        }
         const result = yield UserModel.getUserById(id);
         res.json(result);
     }
@@ -84,7 +89,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 }));
 // POST /users
-router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/", userValidator_1.CreateUserValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = yield UserModel.createUser(req.body);
         res.json(result);
@@ -97,6 +102,9 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 router.put("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);
+        if (!id) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Id is required."));
+        }
         const result = yield UserModel.updateUser(id, req.body);
         res.json(result);
     }
@@ -108,6 +116,9 @@ router.put("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);
+        if (!id) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Id is required."));
+        }
         const result = yield UserModel.deleteUser(id);
         res.json(result);
     }

@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import * as FeaturesModel from "../model/featuresModel";
 import ResponseStatus from "../helper/responseStatus";
+import { ListValidator } from "../validator/commonValidator";
+import { CreateFeaturesValidator } from "../validator/featuresValidator";
 
 const router = express.Router();
 const handleError = (res: Response, err: Error) => {
@@ -8,7 +10,7 @@ const handleError = (res: Response, err: Error) => {
   res.json(ResponseStatus.UNKNOWN(err.message));
 };
 
-router.get("/list", async (req, res) => {
+router.get("/list", ListValidator, async (req: Request, res: Response) => {
   try {
     const { current = 1, limit = 10 } = req.body;
     const result = await FeaturesModel.getFeatures();
@@ -21,7 +23,7 @@ router.get("/list", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", CreateFeaturesValidator, async (req: Request, res: Response) => {
   try {
     const result = await FeaturesModel.createFeature(req.body);
     res.json(result);
@@ -30,7 +32,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const result = await FeaturesModel.updateFeature(id, req.body);
@@ -40,7 +42,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const result = await FeaturesModel.deleteFeature(id);

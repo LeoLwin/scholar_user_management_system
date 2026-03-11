@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateUserValidator = exports.handleValidation = void 0;
+exports.ListUserValidator = exports.CreateUserValidator = exports.handleValidation = void 0;
 const express_validator_1 = require("express-validator");
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
 const handleValidation = (req, res, next) => {
@@ -44,5 +44,16 @@ exports.CreateUserValidator = [
     (0, express_validator_1.body)("gender")
         .optional()
         .isIn(["male", "female", "other"]).withMessage("gender must be 'male', 'female', or 'other'"),
+    exports.handleValidation
+];
+exports.ListUserValidator = [
+    (0, express_validator_1.query)("current")
+        .optional()
+        .isInt({ min: 1 }).withMessage("current must be a positive integer")
+        .toInt(), // automatically convert to number
+    (0, express_validator_1.query)("limit")
+        .optional()
+        .isInt({ min: 1 }).withMessage("limit must be a positive integer")
+        .toInt(),
     exports.handleValidation
 ];

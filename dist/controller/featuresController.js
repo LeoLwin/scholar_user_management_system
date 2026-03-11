@@ -48,12 +48,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const FeaturesModel = __importStar(require("../model/featuresModel"));
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
+const commonValidator_1 = require("../validator/commonValidator");
+const featuresValidator_1 = require("../validator/featuresValidator");
 const router = express_1.default.Router();
 const handleError = (res, err) => {
     console.error("Endpoint error:", err);
     res.json(responseStatus_1.default.UNKNOWN(err.message));
 };
-router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/list", commonValidator_1.ListValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { current = 1, limit = 10 } = req.body;
         const result = yield FeaturesModel.getFeatures();
@@ -66,7 +68,7 @@ router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         handleError(res, err);
     }
 }));
-router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/", featuresValidator_1.CreateFeaturesValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = yield FeaturesModel.createFeature(req.body);
         res.json(result);
