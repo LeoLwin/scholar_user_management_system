@@ -49,6 +49,7 @@ const express_1 = __importDefault(require("express"));
 const PermissionModel = __importStar(require("../model/permissionModel"));
 const RolePermissionModel = __importStar(require("../model/rolePermissionModel"));
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
+const dbHelper_1 = __importDefault(require("../helper/dbHelper"));
 const router = express_1.default.Router();
 const handleError = (res, err) => {
     console.error("Endpoint error:", err);
@@ -87,12 +88,36 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 }));
 router.post("/roles-permissions", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let connection;
     try {
-        const result = yield RolePermissionModel.assignPermissionToRole(req.body);
-        res.json(result);
+        const { roleId, permissionIds } = req.body; // permissionIds = number[]
+        if (!roleId || !Array.isArray(permissionIds) || !permissionIds.length) {
+            return res.status(400).json({ message: "roleId and permissionIds required" });
+        }
+        connection = yield dbHelper_1.default.getConnection();
+        yield connection.beginTransaction();
+        for (const permissionId of permissionIds) {
+            const result = yield RolePermissionModel.assignPermissionToRole(connection, {
+                roleId,
+                permissionId,
+            });
+            if (result.code !== "200") {
+                yield connection.rollback();
+                return res.status(500).json(result);
+            }
+        }
+        yield connection.commit();
+        res.json({ code: "200", message: "Permissions assigned successfully" });
     }
     catch (err) {
-        handleError(res, err);
+        if (connection)
+            yield connection.rollback();
+        const msg = err instanceof Error ? err.message : String(err);
+        res.status(500).json({ code: "500", message: msg });
+    }
+    finally {
+        if (connection)
+            yield connection.release();
     }
 }));
 router.get("/roles-permissions/:roleId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {

@@ -14,7 +14,7 @@ const pool = mysql.createPool({
 });
 
 // Ping database to check for common exception errors.
-pool.getConnection((err : any, connection : any) => {
+pool.getConnection((err: any, connection: any) => {
     if (err) {
         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
             console.error('Database connection was closed.');
@@ -32,12 +32,12 @@ pool.getConnection((err : any, connection : any) => {
     return;
 })
 
-export  const checkConnection = async () => {
+export const checkConnection = async () => {
     try {
         const connection = await pool.promise().getConnection();
         console.log('Connected to MySQL database.');
         connection.release(); // Always release the connection back to the pool
-    } catch (err : any) {
+    } catch (err: any) {
         console.error('Database connection failed:', err.message);
     }
 }

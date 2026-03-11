@@ -73,9 +73,9 @@ export const getUsers = async (current: number, limit: number): Promise<Response
     const countQuery = `SELECT COUNT(*) as total FROM admin_users`;
     const [countRows]: [RowDataPacket[], any] = await connection.query(countQuery);
     const totalRecords = countRows[0].total;
-    if(totalRecords === 0) {
+    if (totalRecords === 0) {
       return StatusCode.OK({
-        data: [],
+        by: [],
         pagination: {
           currentPage: current,
           limit: limit,
@@ -108,7 +108,7 @@ export const getUsers = async (current: number, limit: number): Promise<Response
     const [rows]: [RowDataPacket[], any] = await connection.query(query, [limit, offset]);
 
     return StatusCode.OK({
-      data: rows,
+      by: rows,
       pagination: {
         currentPage: current,
         limit: limit,
@@ -132,7 +132,7 @@ export const getUserById = async (id: number): Promise<ResponseStatus> => {
 
     // const query = `SELECT id, name, username, email, role_id, phone, address, gender FROM admin_users WHERE id=?`;
 
-    const query =`
+    const query = `
                   SELECT 
                       u.id, 
                       u.name, 

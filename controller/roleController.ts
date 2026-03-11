@@ -9,21 +9,18 @@ const handleError = (res: Response, err: Error) => {
   res.json(ResponseStatus.UNKNOWN(err.message));
 };
 
-// GET /roles/list
 router.get("/list", async (req: Request, res: Response) => {
   try {
-    const { current = 1, limit = 10 } = req.body;
-    const result = await RoleModel.getRoles();
-    let list = result.data || [];
-    const start = (current - 1) * limit;
-    const paginatedList = list.slice(start, start + limit);
-    res.json(ResponseStatus.OK({ total: list.length, list: paginatedList }));
+    console.log("Hit the role controller")
+    const { current = 1, limit = 10 } = req.query;
+    const result = await RoleModel.getRoles(Number(current), Number(limit));
+
+    res.json(result);
   } catch (err) {
     handleError(res, err as Error);
   }
 });
 
-// GET /roles/:id
 router.get("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -34,7 +31,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// POST /roles
 router.post("/", async (req, res) => {
   try {
     const result = await RoleModel.createRole(req.body);
@@ -44,7 +40,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// PUT /roles/:id
 router.put("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -55,7 +50,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE /roles/:id
 router.delete("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);

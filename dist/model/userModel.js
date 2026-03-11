@@ -66,7 +66,7 @@ const getUsers = (current, limit) => __awaiter(void 0, void 0, void 0, function*
         const totalRecords = countRows[0].total;
         if (totalRecords === 0) {
             return responseStatus_1.default.OK({
-                data: [],
+                by: [],
                 pagination: {
                     currentPage: current,
                     limit: limit,
@@ -95,7 +95,7 @@ const getUsers = (current, limit) => __awaiter(void 0, void 0, void 0, function*
                         `;
         const [rows] = yield connection.query(query, [limit, offset]);
         return responseStatus_1.default.OK({
-            data: rows,
+            by: rows,
             pagination: {
                 currentPage: current,
                 limit: limit,
