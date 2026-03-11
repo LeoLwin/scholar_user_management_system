@@ -18,14 +18,11 @@ router.get("/test", async (req: Request, res: Response) => {
 });
 
 // GET /users/list
-router.post("/list", async (req: Request, res: Response) => {
+router.get("/list", async (req: Request, res: Response) => {
   try {
-    const { current = 1, limit = 10 } = req.body;
-    const result = await UserModel.getUsers();
-    let list = result.data || [];
-    const start = (current - 1) * limit;
-    const paginatedList = list.slice(start, start + limit);
-    res.json(ResponseStatus.OK({ total: list.length, list: paginatedList }));
+    const { current = 1, limit = 10 } = req.query;
+    const result = await UserModel.getUsers(Number(current), Number(limit));
+    res.json(result);
   } catch (err) {
     handleError(res, err as Error);
   }

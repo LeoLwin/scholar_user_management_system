@@ -62,14 +62,11 @@ router.get("/test", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 }));
 // GET /users/list
-router.post("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { current = 1, limit = 10 } = req.body;
-        const result = yield UserModel.getUsers();
-        let list = result.data || [];
-        const start = (current - 1) * limit;
-        const paginatedList = list.slice(start, start + limit);
-        res.json(responseStatus_1.default.OK({ total: list.length, list: paginatedList }));
+        const { current = 1, limit = 10 } = req.query;
+        const result = yield UserModel.getUsers(Number(current), Number(limit));
+        res.json(result);
     }
     catch (err) {
         handleError(res, err);

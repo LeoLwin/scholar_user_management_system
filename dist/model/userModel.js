@@ -55,17 +55,54 @@ const createUser = (data) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.createUser = createUser;
-const getUsers = () => __awaiter(void 0, void 0, void 0, function* () {
+const getUsers = (current, limit) => __awaiter(void 0, void 0, void 0, function* () {
     let connection;
     try {
         connection = yield dbHelper_1.default.getConnection();
-        const query = `
-      SELECT u.id, u.name, u.username, u.email, u.phone, u.address, u.gender, r.name as role
-      FROM admin_users u
-      JOIN roles r ON r.id = u.role_id
-    `;
-        const [rows] = yield connection.query(query);
-        return responseStatus_1.default.OK(rows);
+        const offset = (current - 1) * limit;
+        // get total records
+        const countQuery = `SELECT COUNT(*) as total FROM admin_users`;
+        const [countRows] = yield connection.query(countQuery);
+        const totalRecords = countRows[0].total;
+        if (totalRecords === 0) {
+            return responseStatus_1.default.OK({
+                data: [],
+                pagination: {
+                    currentPage: current,
+                    limit: limit,
+                    totalRecords: 0,
+                    totalPages: 0
+                }
+            });
+        }
+        const totalPages = Math.ceil(totalRecords / limit);
+        // get paginated data
+        const query = `SELECT 
+                      u.id, 
+                      u.name, 
+                      u.username, 
+                      u.email, 
+                      u.phone, 
+                      u.address, 
+                      u.gender, 
+                      JSON_OBJECT(
+                        'id', r.id, 
+                        'name', r.name
+                      ) AS role_info
+                    FROM admin_users u
+                    JOIN roles r ON r.id = u.role_id
+                    LIMIT ? OFFSET ?
+                        `;
+        const [rows] = yield connection.query(query, [limit, offset]);
+        return responseStatus_1.default.OK({
+            data: rows,
+            pagination: {
+                currentPage: current,
+                limit: limit,
+                totalRecords: totalRecords,
+                totalPages: totalPages
+            }
+        });
     }
     catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -81,7 +118,43 @@ const getUserById = (id) => __awaiter(void 0, void 0, void 0, function* () {
     let connection;
     try {
         connection = yield dbHelper_1.default.getConnection();
-        const query = `SELECT id, name, username, email, role_id, phone, address, gender FROM admin_users WHERE id=?`;
+        // const query = `SELECT id, name, username, email, role_id, phone, address, gender FROM admin_users WHERE id=?`;
+        const query = `
+                  SELECT 
+                      u.id, 
+                      u.name, 
+                      u.username, 
+                      u.email, 
+                      u.phone, 
+                      u.address, 
+                      u.gender, 
+                      JSON_OBJECT(
+                        'id', r.id, 
+                        'name', r.name
+                      ) AS role_info,
+                      JSON_OBJECT(
+                        'roleId', r.id
+                      ) AS role_permissions,
+                      JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                          'id', p.id, 
+                          'name', p.name, 
+                          'feature_id', p.feature_id
+                        )
+                      ) AS permissions
+                    FROM admin_users u
+                    JOIN roles r ON r.id = u.role_id
+                    JOIN roles_permissions rp ON rp.role_id = r.id
+                    JOIN permissions p ON p.id = rp.permissions_id
+                    WHERE u.id = ?
+                    GROUP BY 
+                      u.id, 
+                      u.name, 
+                      u.username, 
+                      u.email, 
+                      u.phone, 
+                      u.address, 
+                      u.gender`;
         const [rows] = yield connection.query(query, [id]);
         if (rows.length === 0)
             return responseStatus_1.default.NOT_FOUND("User not found");

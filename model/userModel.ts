@@ -23,7 +23,7 @@ export const createUser = async (data: User): Promise<ResponseStatus> => {
   let connection;
   try {
     const { name, username, email, password, roleId, phone, address, gender } = data;
-    if(!name || !username || !email || !password || !roleId || !phone || !address) {
+    if (!name || !username || !email || !password || !roleId || !phone || !address) {
       return StatusCode.INVALID_ARGUMENT("Missing required fields");
     }
 
@@ -35,7 +35,7 @@ export const createUser = async (data: User): Promise<ResponseStatus> => {
     `;
 
     const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const [result]: [ResultSetHeader, any] = await connection.query(query, [
       name,
@@ -45,7 +45,7 @@ export const createUser = async (data: User): Promise<ResponseStatus> => {
       roleId,
       phone,
       address,
-      gender || 'male', 
+      gender || 'male',
     ]);
 
     if (result.affectedRows === 0) {
@@ -61,20 +61,62 @@ export const createUser = async (data: User): Promise<ResponseStatus> => {
   }
 };
 
-export const getUsers = async (): Promise<ResponseStatus> => {
+export const getUsers = async (current: number, limit: number): Promise<ResponseStatus> => {
   let connection;
+
   try {
     connection = await MySQL.getConnection();
 
-    const query = `
-      SELECT u.id, u.name, u.username, u.email, u.phone, u.address, u.gender, r.name as role
-      FROM admin_users u
-      JOIN roles r ON r.id = u.role_id
-    `;
+    const offset = (current - 1) * limit;
 
-    const [rows]: [RowDataPacket[], any] = await connection.query(query);
+    // get total records
+    const countQuery = `SELECT COUNT(*) as total FROM admin_users`;
+    const [countRows]: [RowDataPacket[], any] = await connection.query(countQuery);
+    const totalRecords = countRows[0].total;
+    if(totalRecords === 0) {
+      return StatusCode.OK({
+        data: [],
+        pagination: {
+          currentPage: current,
+          limit: limit,
+          totalRecords: 0,
+          totalPages: 0
+        }
+      });
+    }
 
-    return StatusCode.OK(rows);
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    // get paginated data
+    const query = `SELECT 
+                      u.id, 
+                      u.name, 
+                      u.username, 
+                      u.email, 
+                      u.phone, 
+                      u.address, 
+                      u.gender, 
+                      JSON_OBJECT(
+                        'id', r.id, 
+                        'name', r.name
+                      ) AS role_info
+                    FROM admin_users u
+                    JOIN roles r ON r.id = u.role_id
+                    LIMIT ? OFFSET ?
+                        `;
+
+    const [rows]: [RowDataPacket[], any] = await connection.query(query, [limit, offset]);
+
+    return StatusCode.OK({
+      data: rows,
+      pagination: {
+        currentPage: current,
+        limit: limit,
+        totalRecords: totalRecords,
+        totalPages: totalPages
+      }
+    });
+
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return StatusCode.UNKNOWN(msg);
@@ -88,7 +130,44 @@ export const getUserById = async (id: number): Promise<ResponseStatus> => {
   try {
     connection = await MySQL.getConnection();
 
-    const query = `SELECT id, name, username, email, role_id, phone, address, gender FROM admin_users WHERE id=?`;
+    // const query = `SELECT id, name, username, email, role_id, phone, address, gender FROM admin_users WHERE id=?`;
+
+    const query =`
+                  SELECT 
+                      u.id, 
+                      u.name, 
+                      u.username, 
+                      u.email, 
+                      u.phone, 
+                      u.address, 
+                      u.gender, 
+                      JSON_OBJECT(
+                        'id', r.id, 
+                        'name', r.name
+                      ) AS role_info,
+                      JSON_OBJECT(
+                        'roleId', r.id
+                      ) AS role_permissions,
+                      JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                          'id', p.id, 
+                          'name', p.name, 
+                          'feature_id', p.feature_id
+                        )
+                      ) AS permissions
+                    FROM admin_users u
+                    JOIN roles r ON r.id = u.role_id
+                    JOIN roles_permissions rp ON rp.role_id = r.id
+                    JOIN permissions p ON p.id = rp.permissions_id
+                    WHERE u.id = ?
+                    GROUP BY 
+                      u.id, 
+                      u.name, 
+                      u.username, 
+                      u.email, 
+                      u.phone, 
+                      u.address, 
+                      u.gender`
     const [rows]: [RowDataPacket[], any] = await connection.query(query, [id]);
 
     if (rows.length === 0) return StatusCode.NOT_FOUND("User not found");
@@ -161,7 +240,6 @@ export const deleteUser = async (id: number): Promise<ResponseStatus> => {
   }
 };
 
-
 export const findUserByEmail = async (email: string): Promise<User | null> => {
   let connection;
   try {
@@ -175,7 +253,7 @@ export const findUserByEmail = async (email: string): Promise<User | null> => {
     const [rows] = await connection.query<RowDataPacket[]>(query, [email]);
 
     if (rows.length === 0) return null;
-    
+
     return rows[0] as User;
   } catch (err) {
     throw err;
@@ -191,7 +269,7 @@ export const initializeSystemData = async (): Promise<ResponseStatus> => {
     await connection.beginTransaction();
 
     const [roles]: [RowDataPacket[], any] = await connection.query("SELECT id FROM roles LIMIT 1");
-    
+
     if (roles.length === 0) {
       console.log("Seed: Inserting Roles, Features, and Permissions...");
 
@@ -218,7 +296,7 @@ export const initializeSystemData = async (): Promise<ResponseStatus> => {
 
     if (adminUser.length === 0) {
       console.log("Seed:");
-      
+
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash('admin123', saltRounds);
 
@@ -226,16 +304,16 @@ export const initializeSystemData = async (): Promise<ResponseStatus> => {
         INSERT INTO admin_users(name, username, email, password, role_id, phone, address, gender)
         VALUES(?, ?, ?, ?, ?, ?, ?, ?)
       `;
-      
+
       console.log()
       await connection.query(insertUserQuery, [
-        'Admin', 
-        'admin', 
-        'admin@system.com', 
-        hashedPassword, 
-        1, 
-        '091234567', 
-        'System Office', 
+        'Admin',
+        'admin',
+        'admin@system.com',
+        hashedPassword,
+        1,
+        '091234567',
+        'System Office',
         'male'
       ]);
     }
