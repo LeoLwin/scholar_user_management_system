@@ -1,23 +1,34 @@
 import express, { Request, Response } from "express";
-import * as FeaturesModel from "../model/featuresModel";
+import { FeatureService } from "../services/featureService";
 import ResponseStatus from "../helper/responseStatus";
 import { ListValidator } from "../validator/commonValidator";
 import { CreateFeaturesValidator } from "../validator/featuresValidator";
 
 const router = express.Router();
+const featureService = new FeatureService();
+
 const handleError = (res: Response, err: Error) => {
   console.error("Endpoint error:", err);
   res.json(ResponseStatus.UNKNOWN(err.message));
 };
 
-router.get("/list", ListValidator, async (req: Request, res: Response) => {
+router.get("/list", async (req: Request, res: Response) => {
   try {
-    const { current = 1, limit = 10 } = req.body;
-    const result = await FeaturesModel.getFeatures();
-    let list = result.data || [];
-    const start = (current - 1) * limit;
-    const paginatedList = list.slice(start, start + limit);
-    res.json(ResponseStatus.OK({ total: list.length, list: paginatedList }));
+    const result = await featureService.getFeatures();
+    res.json(result);
+  } catch (err) {
+    handleError(res, err as Error);
+  }
+});
+
+router.get("/:id", async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Feature ID is required"));
+    }
+    const result = await featureService.getFeatureById(id);
+    res.json(result);
   } catch (err) {
     handleError(res, err as Error);
   }
@@ -25,7 +36,7 @@ router.get("/list", ListValidator, async (req: Request, res: Response) => {
 
 router.post("/", CreateFeaturesValidator, async (req: Request, res: Response) => {
   try {
-    const result = await FeaturesModel.createFeature(req.body);
+    const result = await featureService.createFeature(req.body);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -35,7 +46,10 @@ router.post("/", CreateFeaturesValidator, async (req: Request, res: Response) =>
 router.put("/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const result = await FeaturesModel.updateFeature(id, req.body);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Feature ID is required"));
+    }
+    const result = await featureService.updateFeature(id, req.body);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -45,7 +59,10 @@ router.put("/:id", async (req: Request, res: Response) => {
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const result = await FeaturesModel.deleteFeature(id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Feature ID is required"));
+    }
+    const result = await featureService.deleteFeature(id);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);

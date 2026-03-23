@@ -46,19 +46,46 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
 const authValidator = __importStar(require("../validator/authValidator"));
-const authModel_1 = require("../model/authModel");
-// import { GetUserInfoByEmailResponse } from "../type/type";
+const authService_1 = require("../services/authService");
 const router = express_1.default.Router();
+const authService = new authService_1.AuthService();
 const handleError = (res, err) => {
     console.error("Endpoint error:", err);
-    res.json(responseStatus_1.default.UNKNOWN(err.message));
+    res.json({ code: "500", message: err.message });
 };
 router.post("/login", authValidator.authValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
-        const result = yield (0, authModel_1.login)({ email, password });
+        const result = yield authService.login({ email, password });
+        res.json(result);
+    }
+    catch (err) {
+        handleError(res, err);
+    }
+}));
+router.post("/verify-token", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            res.json({ code: "400", message: "Token is required" });
+            return;
+        }
+        const result = yield authService.verifyToken(token);
+        res.json(result);
+    }
+    catch (err) {
+        handleError(res, err);
+    }
+}));
+router.post("/refresh-token", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            res.json({ code: "400", message: "Token is required" });
+            return;
+        }
+        const result = yield authService.refreshToken(token);
         res.json(result);
     }
     catch (err) {

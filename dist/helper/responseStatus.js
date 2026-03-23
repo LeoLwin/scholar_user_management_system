@@ -53,6 +53,11 @@ const UNAVAILABLE = (message) => ({
     status: "UNAVAILABLE",
     message: message || "Service unavailable",
 });
+const FAILED_PRECONDITION = (message) => ({
+    code: "412",
+    status: "FAILED_PRECONDITION",
+    message: message || "Precondition failed",
+});
 const DEADLINE_EXCEEDED = (message) => ({
     code: "504",
     status: "DEADLINE_EXCEEDED",
@@ -67,6 +72,7 @@ exports.default = {
     PERMISSION_DENIED,
     NOT_FOUND,
     ALREADY_EXISTS,
+    FAILED_PRECONDITION,
     RESOURCE_EXHAUSTED,
     CANCELLED,
     UNKNOWN,

@@ -51,20 +51,15 @@ const express_1 = __importDefault(require("express"));
 const indexController_1 = __importDefault(require("./controller/indexController"));
 const config_1 = __importDefault(require("./config/config"));
 const dbHelper_1 = require("./helper/dbHelper");
-const userModel_1 = require("./model/userModel");
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 1. Verify Database Connectivity first
-        yield (0, dbHelper_1.checkConnection)();
+        yield dbHelper_1.prisma.$connect();
         console.log("Database connection established.");
-        // 2. Seed/Initialize roles and admin user
-        const initResult = yield (0, userModel_1.initializeSystemData)();
-        if (initResult.code !== "200") {
-            throw new Error(initResult.message);
-        }
+        // 2. Initialize Express app
+        const app = (0, express_1.default)();
         console.log("System initialization complete.");
         // 3. Setup Express
-        const app = (0, express_1.default)();
         app.use(express_1.default.json());
         app.get("/", (req, res) => {
             res.send("Welcome to Student Management System API");

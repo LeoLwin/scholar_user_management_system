@@ -88,6 +88,12 @@ const UNAVAILABLE = (message?: string): ResponseStatus => ({
   message: message || "Service unavailable",
 });
 
+const FAILED_PRECONDITION = (message?: string): ResponseStatus => ({
+  code: "412",
+  status: "FAILED_PRECONDITION",
+  message: message || "Precondition failed",
+});
+
 const DEADLINE_EXCEEDED = (message?: string): ResponseStatus => ({
   code: "504",
   status: "DEADLINE_EXCEEDED",
@@ -103,6 +109,7 @@ export default  {
   PERMISSION_DENIED,
   NOT_FOUND,
   ALREADY_EXISTS,
+  FAILED_PRECONDITION,
   RESOURCE_EXHAUSTED,
   CANCELLED,
   UNKNOWN,

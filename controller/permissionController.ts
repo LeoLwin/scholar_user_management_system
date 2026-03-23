@@ -1,11 +1,12 @@
 import express, { Request, Response } from "express";
-import * as PermissionModel from "../model/permissionModel";
-import * as RolePermissionModel from "../model/rolePermissionModel";
+import { PermissionService } from "../services/permissionService";
+import { RoleService } from "../services/roleService";
 import ResponseStatus from "../helper/responseStatus";
-import MySQL from "../helper/dbHelper";
-
 
 const router = express.Router();
+const permissionService = new PermissionService();
+const roleService = new RoleService();
+
 const handleError = (res: Response, err: Error) => {
   console.error("Endpoint error:", err);
   res.json(ResponseStatus.UNKNOWN(err.message));
@@ -14,7 +15,20 @@ const handleError = (res: Response, err: Error) => {
 router.get("/list", async (req: Request, res: Response) => {
   try {
     const { current = 1, limit = 10 } = req.query;
-    const result = await PermissionModel.getPermissions(Number(current), Number(limit));
+    const result = await permissionService.getPermissions(Number(current), Number(limit));
+    res.json(result);
+  } catch (err) {
+    handleError(res, err as Error);
+  }
+});
+
+router.get("/:id", async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Permission ID is required"));
+    }
+    const result = await permissionService.getPermissionById(id);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -23,7 +37,20 @@ router.get("/list", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const result = await PermissionModel.createPermission(req.body);
+    const result = await permissionService.createPermission(req.body);
+    res.json(result);
+  } catch (err) {
+    handleError(res, err as Error);
+  }
+});
+
+router.put("/:id", async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Permission ID is required"));
+    }
+    const result = await permissionService.updatePermission(id, req.body);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -33,53 +60,52 @@ router.post("/", async (req: Request, res: Response) => {
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const result = await PermissionModel.deletePermission(id);
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Permission ID is required"));
+    }
+    const result = await permissionService.deletePermission(id);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
   }
 });
 
+// Bulk assign permissions to role
 router.post("/roles-permissions", async (req: Request, res: Response) => {
-  let connection;
   try {
     const { roleId, permissionIds } = req.body; // permissionIds = number[]
-    console.log("Req.body : ", req.body)
 
     if (!roleId || !Array.isArray(permissionIds) || !permissionIds.length) {
-      return res.status(400).json({ message: "roleId and permissionIds required" });
+      return res.json(ResponseStatus.INVALID_ARGUMENT("roleId and permissionIds are required"));
     }
 
-    connection = await MySQL.getConnection();
-    await connection.beginTransaction();
-
+    // Assign permissions one by one
+    const results = [];
     for (const permissionId of permissionIds) {
-      const result = await RolePermissionModel.assignPermissionToRole(connection, {
-        roleId,
-        permissionId,
-      });
-      if (result.code !== "200") {
-        await connection.rollback();
-        return res.json(result);
-      }
+      const result = await roleService.assignPermissionToRole(roleId, permissionId);
+      results.push(result);
+      // If any assignment fails, we could handle it here
     }
 
-    await connection.commit();
-    res.json({ code: "200", message: "Permissions assigned successfully" });
+    res.json(ResponseStatus.OK({
+      roleId,
+      assignedPermissions: permissionIds.length,
+      results
+    }, "Permissions assigned successfully"));
 
-  } catch (err: unknown) {
-    if (connection) await connection.rollback();
-    const msg = err instanceof Error ? err.message : String(err);
-    res.status(500).json({ code: "500", message: msg });
-  } finally {
-    if (connection) await connection.release();
+  } catch (err) {
+    handleError(res, err as Error);
   }
 });
 
+// Get permissions by role
 router.get("/roles-permissions/:roleId", async (req: Request, res: Response) => {
   try {
     const roleId = Number(req.params.roleId);
-    const result = await RolePermissionModel.getPermissionsByRole(roleId);
+    if (!roleId) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Role ID is required"));
+    }
+    const result = await roleService.getRolePermissions(roleId);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);

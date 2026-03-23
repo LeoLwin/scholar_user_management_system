@@ -1,37 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46,11 +13,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const PermissionModel = __importStar(require("../model/permissionModel"));
-const RolePermissionModel = __importStar(require("../model/rolePermissionModel"));
+const permissionService_1 = require("../services/permissionService");
+const roleService_1 = require("../services/roleService");
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
-const dbHelper_1 = __importDefault(require("../helper/dbHelper"));
 const router = express_1.default.Router();
+const permissionService = new permissionService_1.PermissionService();
+const roleService = new roleService_1.RoleService();
 const handleError = (res, err) => {
     console.error("Endpoint error:", err);
     res.json(responseStatus_1.default.UNKNOWN(err.message));
@@ -58,7 +26,20 @@ const handleError = (res, err) => {
 router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { current = 1, limit = 10 } = req.query;
-        const result = yield PermissionModel.getPermissions(Number(current), Number(limit));
+        const result = yield permissionService.getPermissions(Number(current), Number(limit));
+        res.json(result);
+    }
+    catch (err) {
+        handleError(res, err);
+    }
+}));
+router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const id = Number(req.params.id);
+        if (!id) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Permission ID is required"));
+        }
+        const result = yield permissionService.getPermissionById(id);
         res.json(result);
     }
     catch (err) {
@@ -67,7 +48,20 @@ router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 }));
 router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield PermissionModel.createPermission(req.body);
+        const result = yield permissionService.createPermission(req.body);
+        res.json(result);
+    }
+    catch (err) {
+        handleError(res, err);
+    }
+}));
+router.put("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const id = Number(req.params.id);
+        if (!id) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Permission ID is required"));
+        }
+        const result = yield permissionService.updatePermission(id, req.body);
         res.json(result);
     }
     catch (err) {
@@ -77,51 +71,48 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);
-        const result = yield PermissionModel.deletePermission(id);
+        if (!id) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Permission ID is required"));
+        }
+        const result = yield permissionService.deletePermission(id);
         res.json(result);
     }
     catch (err) {
         handleError(res, err);
     }
 }));
+// Bulk assign permissions to role
 router.post("/roles-permissions", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let connection;
     try {
         const { roleId, permissionIds } = req.body; // permissionIds = number[]
-        console.log("Req.body : ", req.body);
         if (!roleId || !Array.isArray(permissionIds) || !permissionIds.length) {
-            return res.status(400).json({ message: "roleId and permissionIds required" });
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("roleId and permissionIds are required"));
         }
-        connection = yield dbHelper_1.default.getConnection();
-        yield connection.beginTransaction();
+        // Assign permissions one by one
+        const results = [];
         for (const permissionId of permissionIds) {
-            const result = yield RolePermissionModel.assignPermissionToRole(connection, {
-                roleId,
-                permissionId,
-            });
-            if (result.code !== "200") {
-                yield connection.rollback();
-                return res.json(result);
-            }
+            const result = yield roleService.assignPermissionToRole(roleId, permissionId);
+            results.push(result);
+            // If any assignment fails, we could handle it here
         }
-        yield connection.commit();
-        res.json({ code: "200", message: "Permissions assigned successfully" });
+        res.json(responseStatus_1.default.OK({
+            roleId,
+            assignedPermissions: permissionIds.length,
+            results
+        }, "Permissions assigned successfully"));
     }
     catch (err) {
-        if (connection)
-            yield connection.rollback();
-        const msg = err instanceof Error ? err.message : String(err);
-        res.status(500).json({ code: "500", message: msg });
-    }
-    finally {
-        if (connection)
-            yield connection.release();
+        handleError(res, err);
     }
 }));
+// Get permissions by role
 router.get("/roles-permissions/:roleId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const roleId = Number(req.params.roleId);
-        const result = yield RolePermissionModel.getPermissionsByRole(roleId);
+        if (!roleId) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Role ID is required"));
+        }
+        const result = yield roleService.getRolePermissions(roleId);
         res.json(result);
     }
     catch (err) {
