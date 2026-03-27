@@ -1,4 +1,4 @@
-import { PrismaClient, AdminUser, Gender } from '../generated/prisma/client';
+import { AdminUser, Gender } from '../generated/prisma/client';
 import prisma from '../helper/prismaClient';
 
 export interface CreateUserData {
@@ -23,104 +23,76 @@ export interface UpdateUserData {
   is_active?: boolean;
 }
 
-export class UserRepository {
-  private prisma: PrismaClient;
+export const createUser = (data: CreateUserData): Promise<AdminUser> =>
+  prisma.adminUser.create({
+    data: {
+      name: data.name,
+      username: data.username,
+      email: data.email,
+      password: data.password,
+      role_id: data.roleId,
+      phone: data.phone,
+      address: data.address,
+      gender: data.gender || 'male',
+    },
+    include: { role: true },
+  });
 
-  constructor() {
-    this.prisma = prisma;
-  }
+export const findUserById = (id: number): Promise<AdminUser | null> =>
+  prisma.adminUser.findUnique({
+    where: { id },
+    include: { role: true },
+  });
 
-  async create(data: CreateUserData): Promise<AdminUser> {
-    return this.prisma.adminUser.create({
-      data: {
-        name: data.name,
-        username: data.username,
-        email: data.email,
-        password: data.password,
-        role_id: data.roleId,
-        phone: data.phone,
-        address: data.address,
-        gender: data.gender || 'male',
-      },
-      include: {
-        role: true,
-      },
-    });
-  }
+export const findUserByEmail = (email: string): Promise<AdminUser | null> =>
+  prisma.adminUser.findUnique({
+    where: { email },
+    include: { role: true },
+  });
 
-  async findById(id: number): Promise<AdminUser | null> {
-    return this.prisma.adminUser.findUnique({
-      where: { id },
-      include: {
-        role: true,
-      },
-    });
-  }
+export const findUserByUsername = (username: string): Promise<AdminUser | null> =>
+  prisma.adminUser.findFirst({
+    where: { username },
+    include: { role: true },
+  });
 
-  async findByEmail(email: string): Promise<AdminUser | null> {
-    return this.prisma.adminUser.findUnique({
-      where: { email },
-      include: {
-        role: true,
-      },
-    });
-  }
+export const findAllUsers = (options?: {
+  skip?: number;
+  take?: number;
+  where?: any;
+  include?: any;
+}): Promise<AdminUser[]> =>
+  prisma.adminUser.findMany({
+    skip: options?.skip,
+    take: options?.take,
+    where: options?.where,
+    include: {
+      role: true,
+      ...options?.include,
+    } as any,
+  });
 
-  async findByUsername(username: string): Promise<AdminUser | null> {
-    return this.prisma.adminUser.findFirst({
-      where: { username },
-      include: {
-        role: true,
-      },
-    });
-  }
+export const updateUser = (id: number, data: UpdateUserData): Promise<AdminUser> =>
+  prisma.adminUser.update({
+    where: { id },
+    data: {
+      ...(data.name && { name: data.name }),
+      ...(data.username && { username: data.username }),
+      ...(data.email && { email: data.email }),
+      ...(data.roleId && { role_id: data.roleId }),
+      ...(data.phone && { phone: data.phone }),
+      ...(data.address && { address: data.address }),
+      ...(data.gender && { gender: data.gender }),
+      ...(data.is_active !== undefined && { is_active: data.is_active }),
+    },
+    include: { role: true },
+  });
 
-  async findAll(options?: {
-    skip?: number;
-    take?: number;
-    where?: any;
-    include?: any;
-  }): Promise<AdminUser[]> {
-    return this.prisma.adminUser.findMany({
-      skip: options?.skip,
-      take: options?.take,
-      where: options?.where,
-      include: {
-        role: true,
-        ...options?.include,
-      } as any,
-    });
-  }
+export const deleteUser = (id: number): Promise<AdminUser> =>
+  prisma.adminUser.delete({
+    where: { id },
+    include: { role: true },
+  });
 
-  async update(id: number, data: UpdateUserData): Promise<AdminUser> {
-    return this.prisma.adminUser.update({
-      where: { id },
-      data: {
-        ...(data.name && { name: data.name }),
-        ...(data.username && { username: data.username }),
-        ...(data.email && { email: data.email }),
-        ...(data.roleId && { role_id: data.roleId }),
-        ...(data.phone && { phone: data.phone }),
-        ...(data.address && { address: data.address }),
-        ...(data.gender && { gender: data.gender }),
-        ...(data.is_active !== undefined && { is_active: data.is_active }),
-      },
-      include: {
-        role: true,
-      },
-    });
-  }
-
-  async delete(id: number): Promise<AdminUser> {
-    return this.prisma.adminUser.delete({
-      where: { id },
-      include: {
-        role: true,
-      },
-    });
-  }
-
-  async count(where?: any): Promise<number> {
-    return this.prisma.adminUser.count({ where });
-  }
-}
+export const countUsers = (where?: any): Promise<number> =>
+  prisma.adminUser.count({ where });

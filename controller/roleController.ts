@@ -1,11 +1,10 @@
 import express, { Request, Response } from "express";
-import { RoleService } from "../services/roleService";
+import { getRoles, getRoleById, createRole, updateRole, deleteRole, assignPermission, removePermission, getRolePermissionList } from "../services/roleService";
 import ResponseStatus from "../helper/responseStatus";
 import { CreateRoleValidator } from "../validator/roleValidator";
 import { ListValidator } from "../validator/commonValidator";
 
 const router = express.Router();
-const roleService = new RoleService();
 
 const handleError = (res: Response, err: Error) => {
   console.error("Endpoint error:", err);
@@ -16,7 +15,7 @@ router.get("/list", ListValidator, async (req: Request, res: Response) => {
   try {
     console.log("Hit the role controller")
     const { current = 1, limit = 10 } = req.query;
-    const result = await roleService.getRoles(Number(current), Number(limit));
+    const result = await getRoles(Number(current), Number(limit));
 
     res.json(result);
   } catch (err) {
@@ -30,7 +29,7 @@ router.get("/:id", async (req, res) => {
     if (!id) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
     }
-    const result = await roleService.getRoleById(id);
+    const result = await getRoleById(id);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -39,7 +38,7 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", CreateRoleValidator, async (req: Request, res: Response) => {
   try {
-    const result = await roleService.createRole(req.body);
+    const result = await createRole(req.body);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -55,7 +54,7 @@ router.post("/:id/permissions", async (req: Request, res: Response) => {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Role ID and Permission ID are required"));
     }
 
-    const result = await roleService.assignPermissionToRole(roleId, permissionId);
+    const result = await assignPermission(roleId, permissionId);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -71,7 +70,7 @@ router.delete("/:id/permissions/:permissionId", async (req: Request, res: Respon
       return res.json(ResponseStatus.INVALID_ARGUMENT("Role ID and Permission ID are required"));
     }
 
-    const result = await roleService.removePermissionFromRole(roleId, permissionId);
+    const result = await removePermission(roleId, permissionId);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -85,7 +84,7 @@ router.get("/:id/permissions", async (req: Request, res: Response) => {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Role ID is required"));
     }
 
-    const result = await roleService.getRolePermissions(roleId);
+    const result = await getRolePermissionList(roleId);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -98,7 +97,7 @@ router.put("/:id", async (req, res) => {
     if (!id) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
     }
-    const result = await roleService.updateRole(id, req.body);
+    const result = await updateRole(id, req.body);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -111,7 +110,7 @@ router.delete("/:id", async (req, res) => {
     if (!id) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
     }
-    const result = await roleService.deleteRole(id);
+    const result = await deleteRole(id);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);

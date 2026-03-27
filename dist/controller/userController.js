@@ -18,7 +18,6 @@ const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
 const userValidator_1 = require("../validator/userValidator");
 const commonValidator_1 = require("../validator/commonValidator");
 const router = express_1.default.Router();
-const userService = new userService_1.UserService();
 const handleError = (res, err) => {
     console.error("Endpoint error:", err);
     res.json(responseStatus_1.default.UNKNOWN(err.message));
@@ -35,7 +34,7 @@ router.get("/test", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 router.get("/list", commonValidator_1.ListValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { current = 1, limit = 10 } = req.query;
-        const result = yield userService.getUsers(Number(current), Number(limit));
+        const result = yield (0, userService_1.getUsers)(Number(current), Number(limit));
         res.json(result);
     }
     catch (err) {
@@ -49,7 +48,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!id) {
             return res.json(responseStatus_1.default.INVALID_ARGUMENT("Id is required."));
         }
-        const result = yield userService.getUserById(id);
+        const result = yield (0, userService_1.getUserById)(id);
         res.json(result);
     }
     catch (err) {
@@ -59,7 +58,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 // POST /users
 router.post("/", userValidator_1.CreateUserValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield userService.createUser(req.body);
+        const result = yield (0, userService_1.createUser)(req.body);
         res.json(result);
     }
     catch (err) {
@@ -73,7 +72,7 @@ router.put("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!id) {
             return res.json(responseStatus_1.default.INVALID_ARGUMENT("Id is required."));
         }
-        const result = yield userService.updateUser(id, req.body);
+        const result = yield (0, userService_1.updateUser)(id, req.body);
         res.json(result);
     }
     catch (err) {
@@ -87,7 +86,7 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (!id) {
             return res.json(responseStatus_1.default.INVALID_ARGUMENT("Id is required."));
         }
-        const result = yield userService.deleteUser(id);
+        const result = yield (0, userService_1.deleteUser)(id);
         res.json(result);
     }
     catch (err) {

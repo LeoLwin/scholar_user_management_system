@@ -49,7 +49,6 @@ const express_1 = __importDefault(require("express"));
 const authValidator = __importStar(require("../validator/authValidator"));
 const authService_1 = require("../services/authService");
 const router = express_1.default.Router();
-const authService = new authService_1.AuthService();
 const handleError = (res, err) => {
     console.error("Endpoint error:", err);
     res.json({ code: "500", message: err.message });
@@ -57,7 +56,7 @@ const handleError = (res, err) => {
 router.post("/login", authValidator.authValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
-        const result = yield authService.login({ email, password });
+        const result = yield (0, authService_1.login)({ email, password });
         res.json(result);
     }
     catch (err) {
@@ -71,7 +70,7 @@ router.post("/verify-token", (req, res) => __awaiter(void 0, void 0, void 0, fun
             res.json({ code: "400", message: "Token is required" });
             return;
         }
-        const result = yield authService.verifyToken(token);
+        const result = yield (0, authService_1.verifyToken)(token);
         res.json(result);
     }
     catch (err) {
@@ -85,7 +84,7 @@ router.post("/refresh-token", (req, res) => __awaiter(void 0, void 0, void 0, fu
             res.json({ code: "400", message: "Token is required" });
             return;
         }
-        const result = yield authService.refreshToken(token);
+        const result = yield (0, authService_1.refreshToken)(token);
         res.json(result);
     }
     catch (err) {

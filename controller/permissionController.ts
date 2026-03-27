@@ -1,11 +1,9 @@
 import express, { Request, Response } from "express";
-import { PermissionService } from "../services/permissionService";
-import { RoleService } from "../services/roleService";
+import { getPermissions, getPermissionById, createPermission, updatePermission, deletePermission } from "../services/permissionService";
+import { assignPermission, getRolePermissionList } from "../services/roleService";
 import ResponseStatus from "../helper/responseStatus";
 
 const router = express.Router();
-const permissionService = new PermissionService();
-const roleService = new RoleService();
 
 const handleError = (res: Response, err: Error) => {
   console.error("Endpoint error:", err);
@@ -15,7 +13,7 @@ const handleError = (res: Response, err: Error) => {
 router.get("/list", async (req: Request, res: Response) => {
   try {
     const { current = 1, limit = 10 } = req.query;
-    const result = await permissionService.getPermissions(Number(current), Number(limit));
+    const result = await getPermissions(Number(current), Number(limit));
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -28,7 +26,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     if (!id) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Permission ID is required"));
     }
-    const result = await permissionService.getPermissionById(id);
+    const result = await getPermissionById(id);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -37,7 +35,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const result = await permissionService.createPermission(req.body);
+    const result = await createPermission(req.body);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -50,7 +48,7 @@ router.put("/:id", async (req: Request, res: Response) => {
     if (!id) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Permission ID is required"));
     }
-    const result = await permissionService.updatePermission(id, req.body);
+    const result = await updatePermission(id, req.body);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -63,7 +61,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
     if (!id) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Permission ID is required"));
     }
-    const result = await permissionService.deletePermission(id);
+    const result = await deletePermission(id);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -82,7 +80,7 @@ router.post("/roles-permissions", async (req: Request, res: Response) => {
     // Assign permissions one by one
     const results = [];
     for (const permissionId of permissionIds) {
-      const result = await roleService.assignPermissionToRole(roleId, permissionId);
+      const result = await assignPermission(roleId, permissionId);
       results.push(result);
       // If any assignment fails, we could handle it here
     }
@@ -105,7 +103,7 @@ router.get("/roles-permissions/:roleId", async (req: Request, res: Response) => 
     if (!roleId) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Role ID is required"));
     }
-    const result = await roleService.getRolePermissions(roleId);
+    const result = await getRolePermissionList(roleId);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);

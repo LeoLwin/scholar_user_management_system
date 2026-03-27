@@ -1,4 +1,4 @@
-import { PrismaClient, Feature } from '../generated/prisma/client';
+import { Feature } from '../generated/prisma/client';
 import prisma from '../helper/prismaClient';
 
 export interface CreateFeatureData {
@@ -9,81 +9,54 @@ export interface UpdateFeatureData {
   name?: string;
 }
 
-export class FeatureRepository {
-  private prisma: PrismaClient;
+export const createFeature = (data: CreateFeatureData): Promise<Feature> =>
+  prisma.feature.create({
+    data: { name: data.name },
+    include: { permissions: true },
+  });
 
-  constructor() {
-    this.prisma = prisma;
-  }
+export const findFeatureById = (id: number): Promise<Feature | null> =>
+  prisma.feature.findUnique({
+    where: { id },
+    include: { permissions: true },
+  });
 
-  async create(data: CreateFeatureData): Promise<Feature> {
-    return this.prisma.feature.create({
-      data: {
-        name: data.name,
-      },
-      include: {
-        permissions: true,
-      },
-    });
-  }
+export const findFeatureByName = (name: string): Promise<Feature | null> =>
+  prisma.feature.findFirst({
+    where: { name },
+    include: { permissions: true },
+  });
 
-  async findById(id: number): Promise<Feature | null> {
-    return this.prisma.feature.findUnique({
-      where: { id },
-      include: {
-        permissions: true,
-      },
-    });
-  }
+export const findAllFeatures = (options?: {
+  skip?: number;
+  take?: number;
+  where?: any;
+  include?: any;
+}): Promise<Feature[]> =>
+  prisma.feature.findMany({
+    skip: options?.skip,
+    take: options?.take,
+    where: options?.where,
+    include: {
+      permissions: true,
+      ...options?.include,
+    } as any,
+  });
 
-  async findByName(name: string): Promise<Feature | null> {
-    return this.prisma.feature.findFirst({
-      where: { name },
-      include: {
-        permissions: true,
-      },
-    });
-  }
+export const updateFeature = (id: number, data: UpdateFeatureData): Promise<Feature> =>
+  prisma.feature.update({
+    where: { id },
+    data: {
+      ...(data.name && { name: data.name }),
+    },
+    include: { permissions: true },
+  });
 
-  async findAll(options?: {
-    skip?: number;
-    take?: number;
-    where?: any;
-    include?: any;
-  }): Promise<Feature[]> {
-    return this.prisma.feature.findMany({
-      skip: options?.skip,
-      take: options?.take,
-      where: options?.where,
-      include: {
-        permissions: true,
-        ...options?.include,
-      } as any,
-    });
-  }
+export const deleteFeature = (id: number): Promise<Feature> =>
+  prisma.feature.delete({
+    where: { id },
+    include: { permissions: true },
+  });
 
-  async update(id: number, data: UpdateFeatureData): Promise<Feature> {
-    return this.prisma.feature.update({
-      where: { id },
-      data: {
-        ...(data.name && { name: data.name }),
-      },
-      include: {
-        permissions: true,
-      },
-    });
-  }
-
-  async delete(id: number): Promise<Feature> {
-    return this.prisma.feature.delete({
-      where: { id },
-      include: {
-        permissions: true,
-      },
-    });
-  }
-
-  async count(where?: any): Promise<number> {
-    return this.prisma.feature.count({ where });
-  }
-}
+export const countFeatures = (where?: any): Promise<number> =>
+  prisma.feature.count({ where });

@@ -1,4 +1,4 @@
-import { PrismaClient, Role, RolePermission } from '../generated/prisma/client';
+import { Role, RolePermission } from '../generated/prisma/client';
 import prisma from '../helper/prismaClient';
 
 export interface CreateRoleData {
@@ -9,156 +9,92 @@ export interface UpdateRoleData {
   name?: string;
 }
 
-export class RoleRepository {
-  private prisma: PrismaClient;
-
-  constructor() {
-    this.prisma = prisma;
-  }
-
-  async create(data: CreateRoleData): Promise<Role> {
-    return this.prisma.role.create({
-      data: {
-        name: data.name,
+const roleInclude = {
+  adminUsers: true,
+  permissions: {
+    include: {
+      permission: {
+        include: { feature: true },
       },
-    });
-  }
+    },
+  },
+};
 
-  async findById(id: number): Promise<Role | null> {
-    return this.prisma.role.findUnique({
-      where: { id },
-      include: {
-        adminUsers: true,
-        permissions: {
-          include: {
-            permission: {
-              include: {
-                feature: true,
-              },
-            },
-          },
-        },
-      },
-    });
-  }
+export const createRole = (data: CreateRoleData): Promise<Role> =>
+  prisma.role.create({
+    data: { name: data.name },
+  });
 
-  async findByName(name: string): Promise<Role | null> {
-    return this.prisma.role.findFirst({
-      where: { name },
-      include: {
-        adminUsers: true,
-        permissions: {
-          include: {
-            permission: {
-              include: {
-                feature: true,
-              },
-            },
-          },
-        },
-      },
-    });
-  }
+export const findRoleById = (id: number): Promise<Role | null> =>
+  prisma.role.findUnique({
+    where: { id },
+    include: roleInclude,
+  });
 
-  async findAll(options?: {
-    skip?: number;
-    take?: number;
-    where?: any;
-    include?: any;
-  }): Promise<Role[]> {
-    return this.prisma.role.findMany({
-      skip: options?.skip,
-      take: options?.take,
-      where: options?.where,
-      include: {
-        adminUsers: true,
-        permissions: {
-          include: {
-            permission: {
-              include: {
-                feature: true,
-              },
-            },
-          },
-        },
-        ...options?.include,
-      } as any,
-    });
-  }
+export const findRoleByName = (name: string): Promise<Role | null> =>
+  prisma.role.findFirst({
+    where: { name },
+    include: roleInclude,
+  });
 
-  async update(id: number, data: UpdateRoleData): Promise<Role> {
-    return this.prisma.role.update({
-      where: { id },
-      data: {
-        ...(data.name && { name: data.name }),
-      },
-      include: {
-        adminUsers: true,
-        permissions: {
-          include: {
-            permission: {
-              include: {
-                feature: true,
-              },
-            },
-          },
-        },
-      },
-    });
-  }
+export const findAllRoles = (options?: {
+  skip?: number;
+  take?: number;
+  where?: any;
+  include?: any;
+}): Promise<Role[]> =>
+  prisma.role.findMany({
+    skip: options?.skip,
+    take: options?.take,
+    where: options?.where,
+    include: {
+      ...roleInclude,
+      ...options?.include,
+    } as any,
+  });
 
-  async delete(id: number): Promise<Role> {
-    return this.prisma.role.delete({
-      where: { id },
-      include: {
-        adminUsers: true,
-        permissions: {
-          include: {
-            permission: {
-              include: {
-                feature: true,
-              },
-            },
-          },
-        },
-      },
-    });
-  }
+export const updateRole = (id: number, data: UpdateRoleData): Promise<Role> =>
+  prisma.role.update({
+    where: { id },
+    data: {
+      ...(data.name && { name: data.name }),
+    },
+    include: roleInclude,
+  });
 
-  async count(where?: any): Promise<number> {
-    return this.prisma.role.count({ where });
-  }
+export const deleteRole = (id: number): Promise<Role> =>
+  prisma.role.delete({
+    where: { id },
+    include: roleInclude,
+  });
 
-  async assignPermission(roleId: number, permissionId: number): Promise<RolePermission> {
-    return this.prisma.rolePermission.create({
-      data: {
+export const countRoles = (where?: any): Promise<number> =>
+  prisma.role.count({ where });
+
+export const assignPermissionToRole = (roleId: number, permissionId: number): Promise<RolePermission> =>
+  prisma.rolePermission.create({
+    data: {
+      role_id: roleId,
+      permissions_id: permissionId,
+    },
+  });
+
+export const removePermissionFromRole = (roleId: number, permissionId: number): Promise<RolePermission> =>
+  prisma.rolePermission.delete({
+    where: {
+      role_id_permissions_id: {
         role_id: roleId,
         permissions_id: permissionId,
       },
-    });
-  }
+    },
+  });
 
-  async removePermission(roleId: number, permissionId: number): Promise<RolePermission> {
-    return this.prisma.rolePermission.delete({
-      where: {
-        role_id_permissions_id: {
-          role_id: roleId,
-          permissions_id: permissionId,
-        },
+export const getRolePermissions = (roleId: number): Promise<RolePermission[]> =>
+  prisma.rolePermission.findMany({
+    where: { role_id: roleId },
+    include: {
+      permission: {
+        include: { feature: true },
       },
-    });
-  }
-
-  async getPermissions(roleId: number): Promise<RolePermission[]> {
-    return this.prisma.rolePermission.findMany({
-      where: { role_id: roleId },
-      include: {
-        permission: {
-          include: {
-            feature: true,
-          },
-        },
-      },
-    });
-  }
-}
+    },
+  });

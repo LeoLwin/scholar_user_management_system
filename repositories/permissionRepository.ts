@@ -1,4 +1,4 @@
-import { PrismaClient, Permission } from '../generated/prisma/client';
+import { Permission } from '../generated/prisma/client';
 import prisma from '../helper/prismaClient';
 
 export interface CreatePermissionData {
@@ -11,113 +11,63 @@ export interface UpdatePermissionData {
   featureId?: number;
 }
 
-export class PermissionRepository {
-  private prisma: PrismaClient;
+const permissionInclude = {
+  feature: true,
+  roles: { include: { role: true } },
+};
 
-  constructor() {
-    this.prisma = prisma;
-  }
+export const createPermission = (data: CreatePermissionData): Promise<Permission> =>
+  prisma.permission.create({
+    data: {
+      name: data.name,
+      feature_id: data.featureId,
+    },
+    include: permissionInclude,
+  });
 
-  async create(data: CreatePermissionData): Promise<Permission> {
-    return this.prisma.permission.create({
-      data: {
-        name: data.name,
-        feature_id: data.featureId,
-      },
-      include: {
-        feature: true,
-        roles: {
-          include: {
-            role: true,
-          },
-        },
-      },
-    });
-  }
+export const findPermissionById = (id: number): Promise<Permission | null> =>
+  prisma.permission.findUnique({
+    where: { id },
+    include: permissionInclude,
+  });
 
-  async findById(id: number): Promise<Permission | null> {
-    return this.prisma.permission.findUnique({
-      where: { id },
-      include: {
-        feature: true,
-        roles: {
-          include: {
-            role: true,
-          },
-        },
-      },
-    });
-  }
+export const findPermissionByName = (name: string): Promise<Permission | null> =>
+  prisma.permission.findFirst({
+    where: { name },
+    include: permissionInclude,
+  });
 
-  async findByName(name: string): Promise<Permission | null> {
-    return this.prisma.permission.findFirst({
-      where: { name },
-      include: {
-        feature: true,
-        roles: {
-          include: {
-            role: true,
-          },
-        },
-      },
-    });
-  }
+export const findAllPermissions = (options?: {
+  skip?: number;
+  take?: number;
+  where?: any;
+  include?: any;
+}): Promise<Permission[]> =>
+  prisma.permission.findMany({
+    skip: options?.skip,
+    take: options?.take,
+    where: options?.where,
+    include: {
+      ...permissionInclude,
+      ...options?.include,
+    } as any,
+  });
 
-  async findAll(options?: {
-    skip?: number;
-    take?: number;
-    where?: any;
-    include?: any;
-  }): Promise<Permission[]> {
-    return this.prisma.permission.findMany({
-      skip: options?.skip,
-      take: options?.take,
-      where: options?.where,
-      include: {
-        feature: true,
-        roles: {
-          include: {
-            role: true,
-          },
-        },
-        ...options?.include,
-      } as any,
-    });
-  }
+export const updatePermission = (id: number, data: UpdatePermissionData): Promise<Permission> =>
+  prisma.permission.update({
+    where: { id },
+    data: {
+      ...(data.name && { name: data.name }),
+      ...(data.featureId && { feature_id: data.featureId }),
+    },
+    include: permissionInclude,
+  });
 
-  async update(id: number, data: UpdatePermissionData): Promise<Permission> {
-    return this.prisma.permission.update({
-      where: { id },
-      data: {
-        ...(data.name && { name: data.name }),
-        ...(data.featureId && { feature_id: data.featureId }),
-      },
-      include: {
-        feature: true,
-        roles: {
-          include: {
-            role: true,
-          },
-        },
-      },
-    });
-  }
+export const deletePermission = (id: number): Promise<Permission> =>
+  prisma.permission.delete({
+    where: { id },
+    include: permissionInclude,
+  });
 
-  async delete(id: number): Promise<Permission> {
-    return this.prisma.permission.delete({
-      where: { id },
-      include: {
-        feature: true,
-        roles: {
-          include: {
-            role: true,
-          },
-        },
-      },
-    });
-  }
-
-  async count(where?: any): Promise<number> {
-    return this.prisma.permission.count({ where });
-  }
-}
+export const countPermissions = (where?: any): Promise<number> =>
+  prisma.permission.count({ where });

@@ -17,14 +17,13 @@ const featureService_1 = require("../services/featureService");
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
 const featuresValidator_1 = require("../validator/featuresValidator");
 const router = express_1.default.Router();
-const featureService = new featureService_1.FeatureService();
 const handleError = (res, err) => {
     console.error("Endpoint error:", err);
     res.json(responseStatus_1.default.UNKNOWN(err.message));
 };
 router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield featureService.getFeatures();
+        const result = yield (0, featureService_1.getFeatures)();
         res.json(result);
     }
     catch (err) {
@@ -37,7 +36,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!id) {
             return res.json(responseStatus_1.default.INVALID_ARGUMENT("Feature ID is required"));
         }
-        const result = yield featureService.getFeatureById(id);
+        const result = yield (0, featureService_1.getFeatureById)(id);
         res.json(result);
     }
     catch (err) {
@@ -46,7 +45,7 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 }));
 router.post("/", featuresValidator_1.CreateFeaturesValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield featureService.createFeature(req.body);
+        const result = yield (0, featureService_1.createFeature)(req.body);
         res.json(result);
     }
     catch (err) {
@@ -59,7 +58,7 @@ router.put("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!id) {
             return res.json(responseStatus_1.default.INVALID_ARGUMENT("Feature ID is required"));
         }
-        const result = yield featureService.updateFeature(id, req.body);
+        const result = yield (0, featureService_1.updateFeature)(id, req.body);
         res.json(result);
     }
     catch (err) {
@@ -72,7 +71,7 @@ router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (!id) {
             return res.json(responseStatus_1.default.INVALID_ARGUMENT("Feature ID is required"));
         }
-        const result = yield featureService.deleteFeature(id);
+        const result = yield (0, featureService_1.deleteFeature)(id);
         res.json(result);
     }
     catch (err) {

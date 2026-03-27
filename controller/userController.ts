@@ -1,11 +1,10 @@
 import express, { Request, Response } from "express";
-import { UserService } from "../services/userService";
+import { getUsers, getUserById, createUser, updateUser, deleteUser } from "../services/userService";
 import ResponseStatus from "../helper/responseStatus";
 import { CreateUserValidator } from "../validator/userValidator";
 import { ListValidator } from "../validator/commonValidator";
 
 const router = express.Router();
-const userService = new UserService();
 
 const handleError = (res: Response, err: Error) => {
   console.error("Endpoint error:", err);
@@ -24,7 +23,7 @@ router.get("/test", async (req: Request, res: Response) => {
 router.get("/list", ListValidator, async (req: Request, res: Response) => {
   try {
     const { current = 1, limit = 10 } = req.query;
-    const result = await userService.getUsers(Number(current), Number(limit));
+    const result = await getUsers(Number(current), Number(limit));
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -38,7 +37,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     if (!id) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
     }
-    const result = await userService.getUserById(id);
+    const result = await getUserById(id);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -48,7 +47,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 // POST /users
 router.post("/", CreateUserValidator, async (req: Request, res: Response) => {
   try {
-    const result = await userService.createUser(req.body);
+    const result = await createUser(req.body);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -62,7 +61,7 @@ router.put("/:id", async (req: Request, res: Response) => {
     if (!id) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
     }
-    const result = await userService.updateUser(id, req.body);
+    const result = await updateUser(id, req.body);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -76,7 +75,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
     if (!id) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Id is required."))
     }
-    const result = await userService.deleteUser(id);
+    const result = await deleteUser(id);
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
