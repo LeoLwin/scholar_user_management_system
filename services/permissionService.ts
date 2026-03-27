@@ -6,12 +6,12 @@ import {
   updatePermission as updatePermissionRepo,
   deletePermission as deletePermissionRepo,
   countPermissions,
-  CreatePermissionData,
-  UpdatePermissionData,
+
 } from '../repositories/permissionRepository';
 import { findFeatureById } from '../repositories/featureRepository';
 import StatusCode from '../helper/responseStatus';
 import { ResponseStatus } from '../helper/responseStatus';
+import { CreatePermissionData, UpdatePermissionData } from '../type/permissionType';
 
 export const createPermission = async (data: CreatePermissionData): Promise<ResponseStatus> => {
   try {

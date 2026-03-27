@@ -1,13 +1,8 @@
 import { Role, RolePermission } from '../generated/prisma/client';
 import prisma from '../helper/prismaClient';
+import { CreateRoleData, UpdateRoleData } from '../type/roleType';
 
-export interface CreateRoleData {
-  name: string;
-}
 
-export interface UpdateRoleData {
-  name?: string;
-}
 
 const roleInclude = {
   adminUsers: true,

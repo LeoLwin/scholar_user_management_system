@@ -1,27 +1,7 @@
-import { AdminUser, Gender } from '../generated/prisma/client';
+import { AdminUser } from '../generated/prisma/client';
 import prisma from '../helper/prismaClient';
+import { CreateUserData, UpdateUserData } from '../type/userType';
 
-export interface CreateUserData {
-  name: string;
-  username: string;
-  email: string;
-  password: string;
-  roleId: number;
-  phone: string;
-  address: string;
-  gender?: Gender;
-}
-
-export interface UpdateUserData {
-  name?: string;
-  username?: string;
-  email?: string;
-  roleId?: number;
-  phone?: string;
-  address?: string;
-  gender?: Gender;
-  is_active?: boolean;
-}
 
 export const createUser = (data: CreateUserData): Promise<AdminUser> =>
   prisma.adminUser.create({

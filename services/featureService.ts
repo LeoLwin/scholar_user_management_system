@@ -5,11 +5,11 @@ import {
   findAllFeatures,
   updateFeature as updateFeatureRepo,
   deleteFeature as deleteFeatureRepo,
-  CreateFeatureData,
-  UpdateFeatureData,
+
 } from '../repositories/featureRepository';
 import StatusCode from '../helper/responseStatus';
 import { ResponseStatus } from '../helper/responseStatus';
+import { CreateFeatureData, UpdateFeatureData } from '../type/featureType';
 
 export const createFeature = async (data: CreateFeatureData): Promise<ResponseStatus> => {
   try {

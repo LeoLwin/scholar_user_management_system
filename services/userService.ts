@@ -9,13 +9,14 @@ import {
   updateUser as updateUserRepo,
   deleteUser as deleteUserRepo,
   countUsers,
-  CreateUserData,
-  UpdateUserData,
+  // CreateUserData,
+  // UpdateUserData,
 } from '../repositories/userRepository';
 import { findRoleById } from '../repositories/roleRepository';
 import StatusCode from '../helper/responseStatus';
 import { ResponseStatus } from '../helper/responseStatus';
 import config from '../config/config';
+import { CreateUserData, UpdateUserData } from '../type/userType';
 
 export interface LoginData {
   email: string;

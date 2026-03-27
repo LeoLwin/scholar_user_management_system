@@ -88,7 +88,7 @@ router.post("/roles-permissions", async (req: Request, res: Response) => {
     res.json(ResponseStatus.OK({
       roleId,
       assignedPermissions: permissionIds.length,
-      results
+      // results
     }, "Permissions assigned successfully"));
 
   } catch (err) {

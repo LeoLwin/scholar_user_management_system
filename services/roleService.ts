@@ -9,12 +9,11 @@ import {
   assignPermissionToRole,
   removePermissionFromRole,
   getRolePermissions,
-  CreateRoleData,
-  UpdateRoleData,
 } from '../repositories/roleRepository';
 import { findPermissionById } from '../repositories/permissionRepository';
 import StatusCode from '../helper/responseStatus';
 import { ResponseStatus } from '../helper/responseStatus';
+import { CreateRoleData, UpdateRoleData } from '../type/roleType';
 
 export const createRole = async (data: CreateRoleData): Promise<ResponseStatus> => {
   try {
