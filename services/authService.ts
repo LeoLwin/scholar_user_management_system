@@ -37,6 +37,8 @@ export class AuthService {
   async login(credentials: LoginCredentials): Promise<ResponseStatus> {
     try {
       const { email, password } = credentials;
+      console.log("email", email);
+      console.log("password", password);
 
       if (!email || !password) {
         return StatusCode.INVALID_ARGUMENT('Email and password are required');
@@ -47,6 +49,7 @@ export class AuthService {
       if (!user || !user.password) {
         return StatusCode.UNAUTHENTICATED('Invalid email or password');
       }
+      console.log("user : ", user)
 
       // Check if user is active
       if (!user.is_active) {

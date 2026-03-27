@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -11,25 +8,25 @@ datasource db {
 }
 
 model AdminUser {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(45)
-  username  String   @db.VarChar(45)
+  id        Int     @id @default(autoincrement())
+  name      String  @db.VarChar(45)
+  username  String  @db.VarChar(45)
   role_id   Int
-  phone     String   @db.VarChar(45)
-  email     String   @unique @db.VarChar(45)
-  address   String   @db.VarChar(45)
-  password  String   @db.VarChar(700)
-  gender    Gender   @default(male)
-  is_active Boolean  @default(true)
+  phone     String  @db.VarChar(45)
+  email     String  @unique @db.VarChar(45)
+  address   String  @db.VarChar(45)
+  password  String  @db.VarChar(700)
+  gender    Gender  @default(male)
+  is_active Boolean @default(true)
+  role      Role    @relation(fields: [role_id], references: [id])
 
-  role      Role     @relation(fields: [role_id], references: [id])
-
+  @@index([role_id], map: "admin_users_role_id_fkey")
   @@map("admin_users")
 }
 
 model Role {
-  id          Int           @id @default(autoincrement())
-  name        String        @db.VarChar(45)
+  id          Int              @id @default(autoincrement())
+  name        String           @db.VarChar(45)
   adminUsers  AdminUser[]
   permissions RolePermission[]
 
@@ -37,12 +34,13 @@ model Role {
 }
 
 model Permission {
-  id        Int             @id @default(autoincrement())
-  name      String          @db.VarChar(45)
+  id         Int              @id @default(autoincrement())
+  name       String           @db.VarChar(45)
   feature_id Int
-  feature   Feature         @relation(fields: [feature_id], references: [id])
-  roles     RolePermission[]
+  feature    Feature          @relation(fields: [feature_id], references: [id])
+  roles      RolePermission[]
 
+  @@index([feature_id], map: "permissions_feature_id_fkey")
   @@map("permissions")
 }
 
@@ -55,17 +53,17 @@ model Feature {
 }
 
 model RolePermission {
-  role_id       Int
+  role_id        Int
   permissions_id Int
-
-  role           Role        @relation(fields: [role_id], references: [id])
-  permission     Permission  @relation(fields: [permissions_id], references: [id])
+  permission     Permission @relation(fields: [permissions_id], references: [id])
+  role           Role       @relation(fields: [role_id], references: [id])
 
   @@id([role_id, permissions_id])
+  @@index([permissions_id], map: "roles_permissions_permissions_id_fkey")
   @@map("roles_permissions")
 }
 
 enum Gender {
   male
   female
-} 
+}

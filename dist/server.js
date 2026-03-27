@@ -62,7 +62,7 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         // 3. Setup Express
         app.use(express_1.default.json());
         app.get("/", (req, res) => {
-            res.send("Welcome to Student Management System API");
+            res.send("Welcome to User Management System API");
         });
         app.use("/api", indexController_1.default);
         const PORT = config_1.default.port || 8000;

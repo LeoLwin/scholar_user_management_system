@@ -21,7 +21,7 @@ const startServer = async () => {
     app.use(express.json());
 
     app.get("/", (req, res) => {
-      res.send("Welcome to Student Management System API");
+      res.send("Welcome to User Management System API");
     });
 
     app.use("/api", indexController);

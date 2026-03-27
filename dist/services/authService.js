@@ -27,6 +27,8 @@ class AuthService {
             var _a;
             try {
                 const { email, password } = credentials;
+                console.log("email", email);
+                console.log("password", password);
                 if (!email || !password) {
                     return responseStatus_1.default.INVALID_ARGUMENT('Email and password are required');
                 }
@@ -35,6 +37,7 @@ class AuthService {
                 if (!user || !user.password) {
                     return responseStatus_1.default.UNAUTHENTICATED('Invalid email or password');
                 }
+                console.log("user : ", user);
                 // Check if user is active
                 if (!user.is_active) {
                     return responseStatus_1.default.UNAUTHENTICATED('Account is deactivated');
