@@ -1,15 +1,8 @@
 import { Permission } from '../generated/prisma/client';
 import prisma from '../helper/prismaClient';
+import { CreatePermissionData, UpdatePermissionData } from '../type/permissionType';
 
-export interface CreatePermissionData {
-  name: string;
-  featureId: number;
-}
 
-export interface UpdatePermissionData {
-  name?: string;
-  featureId?: number;
-}
 
 const permissionInclude = {
   feature: true,

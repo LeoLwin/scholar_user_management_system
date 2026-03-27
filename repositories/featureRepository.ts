@@ -1,13 +1,7 @@
 import { Feature } from '../generated/prisma/client';
 import prisma from '../helper/prismaClient';
+import { CreateFeatureData, UpdateFeatureData } from '../type/featureType';
 
-export interface CreateFeatureData {
-  name: string;
-}
-
-export interface UpdateFeatureData {
-  name?: string;
-}
 
 export const createFeature = (data: CreateFeatureData): Promise<Feature> =>
   prisma.feature.create({
