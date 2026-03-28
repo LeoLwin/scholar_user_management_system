@@ -1,0 +1,28 @@
+name: Node.js Unit Tests
+
+# When should this run?
+on:
+  push:
+    branches: [ main, develop ] # Runs whenever you push to these branches
+  pull_request:
+    branches: [ main ]         # Runs when someone opens a PR to main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest # The type of virtual machine to use
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4 # Downloads your code onto the VM
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Matches your development environment
+          cache: 'npm'       # Makes the build faster next time
+
+      - name: Install Dependencies
+        run: npm ci # "Clean Install" (better for CI than 'npm install')
+
+      - name: Run Unit Tests
+        run: npm test # This will fail the "Job" if your Jest tests fail
