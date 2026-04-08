@@ -51,6 +51,9 @@ const express_1 = __importDefault(require("express"));
 const indexController_1 = __importDefault(require("./controller/indexController"));
 const config_1 = __importDefault(require("./config/config"));
 const dbHelper_1 = require("./helper/dbHelper");
+// import { ResponseStatus } from "./helper/responseStatus";
+const provider_1 = require("./provider");
+const cors_1 = __importDefault(require("cors"));
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 1. Verify Database Connectivity first
@@ -58,15 +61,28 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         console.log("Database connection established.");
         // 2. Initialize Express app
         const app = (0, express_1.default)();
+        app.set('trust proxy', true);
         console.log("System initialization complete.");
+        app.use((0, cors_1.default)({
+            origin: [
+                "http://localhost:5174",
+                "http://localhost:5173",
+                "http://localhost:5175",
+                "http://localhost:5176"
+            ],
+            credentials: true, // SSO အတွက် Cookie ပါရမှာမို့လို့ ဒါလေး ထည့်ပေးပါ
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allowedHeaders: ["Content-Type", "Authorization"]
+        }));
         // 3. Setup Express
         app.use(express_1.default.json());
         app.get("/", (req, res) => {
             res.send("Welcome to User Management System API");
         });
+        app.use('/oidc', provider_1.oidc.callback());
         app.use("/api", indexController_1.default);
         const PORT = config_1.default.port || 8000;
-        app.listen(PORT, '127.0.0.1', () => {
+        app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server is listening on http://localhost:${PORT}`);
         });
     }
