@@ -4,11 +4,12 @@ import { getUserById } from './services/userService';
 const configuration: Configuration = {
     // ၁. ဘယ် Frontend တွေကို ခွင့်ပြုမလဲ (Clients)
 
+    scopes: ['openid', 'profile', 'email'],
     clients: [
         {
             client_id: 'mfe-client-id',
             client_secret: 'some-very-secret-string', // MFE အတွက်ဆို PKCE သုံးရင် ဒါမလိုသလောက်ပဲ
-            grant_types: ['authorization_code', 'refresh_token'],
+            grant_types: ['authorization_code'],
             redirect_uris: [
                 'http://localhost:5173',
                 'http://localhost:5174',
@@ -54,16 +55,20 @@ const configuration: Configuration = {
     findAccount: async (ctx, id) => {
         // ဒီနေရာမှာ မင်းရဲ့ Database logic နဲ့ User ကို ရှာရမယ်
         // id ဆိုတာ interactionFinished မှာ ပေးခဲ့တဲ့ accountId ဖြစ်ပါတယ်
-        const user = await getUserById(Number(id));
-        console.log("user : ", user)
-        if (!user) return undefined;
+        const userResponse = await getUserById(Number(id));
+        console.log("user : ", userResponse)
+        if (!userResponse || !userResponse.data) return undefined;
+
         return {
             accountId: id,
             async claims(use, scope) {
                 return {
                     sub: id,
-                    email: user.data.users.email, // Database က email ကို ထည့်ပေးပါ
-                    preferred_username: user.data.users.name
+                    // user.data.users.email မဟုတ်ဘဲ userResponse.data.email ဖြစ်ရမယ်
+                    email: userResponse.data.email,
+                    preferred_username: userResponse.data.name,
+                    name: userResponse.data.name,
+                    email_verified: true, // ဒါလေးပါမှ OIDC က ပိုကြိုက်တာ
                 };
             },
         };
@@ -71,5 +76,4 @@ const configuration: Configuration = {
 };
 
 // const oidc = new Provider('http://localhost:5000', configuration); // Backend URL
-export const oidc = new Provider('http://localhost:5000', configuration);
-oidc.proxy = false;
+export const oidc = new Provider('http://localhost:5000/oidc', configuration);

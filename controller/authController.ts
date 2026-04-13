@@ -51,10 +51,16 @@ router.post("/refresh-token", async (req: Request, res: Response) => {
 });
 
 // Express Route ဥပမာ
-router.post('/sso/login/:uid', async (req: Request, res: Response) => {
+router.get('/sso/login/:uid', async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    // const { email, password } = req.body;
+    // const { uid } = req.params;
+    const { email, password } = req.query as { email: string; password: string };
     const { uid } = req.params;
+    console.log("Data : ", { email, password, uid })
+    if (!email || !password) {
+      return res.json("Need emaila adn password")
+    }
 
     console.log("--- SSO Request Debug ---");
     console.log("UID:", uid);
@@ -65,37 +71,60 @@ router.post('/sso/login/:uid', async (req: Request, res: Response) => {
     const authResult = await login({ email, password });
 
     if (authResult && authResult.data && authResult.data.user) {
-
-      // oidc-provider ရဲ့ context ကို req/res ကနေ ဆွဲထုတ်ပါ
-      // ဒါမှ interaction session ကို အတိအကျ သိမှာပါ
-      const interactionDetails = await oidc.interactionDetails(req, res);
-
-      if (!interactionDetails || interactionDetails.uid !== uid) {
-        return res.status(400).json({ message: "Interaction session expired or invalid." });
-      }
-
       const interactionResult = {
         login: {
           accountId: authResult.data.user.id.toString(),
         },
       };
 
-      // interactionResult ကို await လုပ်ပြီး redirect URL ကို ယူမယ်
-      // ဒီနေရာမှာ ctx မသုံးဘဲ req, res သုံးတာ မှန်ပါတယ်၊ 
-      // ဒါပေမဲ့ provider.ts မှာ domain: 'localhost' ထည့်ထားဖို့တော့ လိုမယ်
-      const redirectTo = await oidc.interactionResult(req, res, interactionResult);
+      try {
+        // ၁။ Result ကို အရင်သိမ်းပါ (ဒါက Response ကို မပိတ်ပါဘူး)
+        await oidc.interactionResult(req, res, interactionResult);
 
-      return res.json({
-        success: true,
-        redirectTo
-      });
+        // ၂။ interactionDetails ထဲက returnTo URL ကို ဆွဲထုတ်ပါ
+        // ဒါက OIDC ကနေ UI ဆီ ပြန်သွားမယ့် လိပ်စာအမှန် (Resume URL) ပါ
+        const details = await oidc.interactionDetails(req, res);
+        const redirectTo = details.returnTo;
+
+        console.log("Success! Redirecting to Resume URL:", redirectTo);
+
+        // ၃။ JSON နဲ့ အေးဆေးပြန်လို့ ရသွားပါပြီ
+        // return res.json({
+        //   success: true,
+        //   redirectTo: redirectTo
+        // });
+        // return res.redirect(redirectTo);
+        const resumeUrl = details.returnTo;
+
+        return res.send(`
+        <html>
+          <body style="font-family: sans-serif; text-align: center; padding: 50px;">
+            <h2 style="color: green;">Login Success (Backend Level)</h2>
+            <p>User: <b>${authResult.data.user.name}</b></p>
+            <p>Interaction UID: <code>${uid}</code></p>
+            <hr/>
+            <p>အခု အောက်က ခလုတ်ကို နှိပ်ရင် Dashboard ဆီ ပြန်သွားရမယ်။</p>
+            <a href="${resumeUrl}" style="padding: 10px 20px; background: blue; color: white; text-decoration: none; border-radius: 5px;">
+               Final Step: Go to Dashboard
+            </a>
+            <div style="margin-top: 20px; color: gray; font-size: 12px;">
+               Resume URL: ${resumeUrl}
+            </div>
+          </body>
+        </html>
+      `);
+
+      } catch (oidcError) {
+        console.error("OIDC Processing Error:", oidcError);
+        return res.status(500).json({ message: "OIDC Process Failed" });
+      }
     } else {
       return res.status(401).json({ message: "Invalid Email or password!" });
     }
   } catch (err: any) {
     console.error("SSO Login Error:", err);
     if (err.name === 'SessionNotFound' || err.message.includes('session not found')) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "SSO Session not found. Please clear your cookies and try again.",
         detail: "The browser might be blocking the session cookie between port 5174 and 5000."
       });

@@ -14,11 +14,12 @@ const oidc_provider_1 = require("oidc-provider");
 const userService_1 = require("./services/userService");
 const configuration = {
     // ၁. ဘယ် Frontend တွေကို ခွင့်ပြုမလဲ (Clients)
+    scopes: ['openid', 'profile', 'email'],
     clients: [
         {
             client_id: 'mfe-client-id',
             client_secret: 'some-very-secret-string', // MFE အတွက်ဆို PKCE သုံးရင် ဒါမလိုသလောက်ပဲ
-            grant_types: ['authorization_code', 'refresh_token'],
+            grant_types: ['authorization_code'],
             redirect_uris: [
                 'http://localhost:5173',
                 'http://localhost:5174',
@@ -62,9 +63,9 @@ const configuration = {
     findAccount: (ctx, id) => __awaiter(void 0, void 0, void 0, function* () {
         // ဒီနေရာမှာ မင်းရဲ့ Database logic နဲ့ User ကို ရှာရမယ်
         // id ဆိုတာ interactionFinished မှာ ပေးခဲ့တဲ့ accountId ဖြစ်ပါတယ်
-        const user = yield (0, userService_1.getUserById)(Number(id));
-        console.log("user : ", user);
-        if (!user)
+        const userResponse = yield (0, userService_1.getUserById)(Number(id));
+        console.log("user : ", userResponse);
+        if (!userResponse || !userResponse.data)
             return undefined;
         return {
             accountId: id,
@@ -72,8 +73,11 @@ const configuration = {
                 return __awaiter(this, void 0, void 0, function* () {
                     return {
                         sub: id,
-                        email: user.data.users.email, // Database က email ကို ထည့်ပေးပါ
-                        preferred_username: user.data.users.name
+                        // user.data.users.email မဟုတ်ဘဲ userResponse.data.email ဖြစ်ရမယ်
+                        email: userResponse.data.email,
+                        preferred_username: userResponse.data.name,
+                        name: userResponse.data.name,
+                        email_verified: true, // ဒါလေးပါမှ OIDC က ပိုကြိုက်တာ
                     };
                 });
             },
@@ -81,5 +85,4 @@ const configuration = {
     }),
 };
 // const oidc = new Provider('http://localhost:5000', configuration); // Backend URL
-exports.oidc = new oidc_provider_1.Provider('http://localhost:5000', configuration);
-exports.oidc.proxy = false;
+exports.oidc = new oidc_provider_1.Provider('http://localhost:5000/oidc', configuration);

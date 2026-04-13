@@ -54,6 +54,7 @@ const dbHelper_1 = require("./helper/dbHelper");
 // import { ResponseStatus } from "./helper/responseStatus";
 const provider_1 = require("./provider");
 const cors_1 = __importDefault(require("cors"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 1. Verify Database Connectivity first
@@ -61,10 +62,13 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         console.log("Database connection established.");
         // 2. Initialize Express app
         const app = (0, express_1.default)();
+        app.use((0, cookie_parser_1.default)());
         app.set('trust proxy', true);
         console.log("System initialization complete.");
         app.use((0, cors_1.default)({
             origin: [
+                "http://localhost:5177",
+                "http://localhost:5000",
                 "http://localhost:5174",
                 "http://localhost:5173",
                 "http://localhost:5175",

@@ -7,6 +7,7 @@ import { prisma } from "./helper/dbHelper";
 // import { ResponseStatus } from "./helper/responseStatus";
 import { oidc } from "./provider";
 import cors from "cors";
+import cookieParser from 'cookie-parser';
 
 
 const startServer = async () => {
@@ -17,11 +18,14 @@ const startServer = async () => {
 
     // 2. Initialize Express app
     const app = express();
+    app.use(cookieParser());
     app.set('trust proxy', true);
 
     console.log("System initialization complete.");
     app.use(cors({
       origin: [
+        "http://localhost:5177",
+        "http://localhost:5000",
         "http://localhost:5174",
         "http://localhost:5173",
         "http://localhost:5175",
@@ -34,6 +38,7 @@ const startServer = async () => {
 
     // 3. Setup Express
     app.use(express.json());
+
 
     app.get("/", (req, res) => {
       res.send("Welcome to User Management System API");
