@@ -33,6 +33,15 @@ router.get("/list", commonValidator_1.ListValidator, (req, res) => __awaiter(voi
         handleError(res, err);
     }
 }));
+router.get("/name-value", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = yield (0, roleService_1.getRolesNameAndValue)();
+        res.json(result);
+    }
+    catch (err) {
+        handleError(res, err);
+    }
+}));
 router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);

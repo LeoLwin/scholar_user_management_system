@@ -71,7 +71,7 @@ export const login = async (credentials: LoginCredentials): Promise<ResponseStat
           name: user.name,
           email: user.email,
           roleId: user.role_id,
-          role: user.role?.name,
+          role: user.role,
         },
       },
       'Login successful'

@@ -24,19 +24,19 @@ export const CreateUserValidator = [
     .notEmpty().withMessage("name is required")
     .isString().withMessage("name must be a string"),
 
-  body("username")
-    .notEmpty().withMessage("username is required")
-    .isString().withMessage("username must be a string"),
+  // body("username")
+  //   .notEmpty().withMessage("username is required")
+  //   .isString().withMessage("username must be a string"),
 
   body("email")
     .notEmpty().withMessage("email is required")
     .isEmail().withMessage("email must be a valid email address")
     .isString().withMessage("email must be a string"),
 
-  body("password")
-    .notEmpty().withMessage("password is required")
-    .isString().withMessage("password must be a string")
-    .isLength({ min: 8 }).withMessage("password must be at least 8 characters"),
+  // body("password")
+  //   .notEmpty().withMessage("password is required")
+  //   .isString().withMessage("password must be a string")
+  //   .isLength({ min: 8 }).withMessage("password must be at least 8 characters"),
 
   body("roleId")
     .notEmpty().withMessage("roleId is required")

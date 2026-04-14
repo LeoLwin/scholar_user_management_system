@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { getRoles, getRoleById, createRole, updateRole, deleteRole, assignPermission, removePermission, getRolePermissionList } from "../services/roleService";
+import { getRoles, getRoleById, createRole, updateRole, deleteRole, assignPermission, removePermission, getRolePermissionList, getRolesNameAndValue } from "../services/roleService";
 import ResponseStatus from "../helper/responseStatus";
 import { CreateRoleValidator } from "../validator/roleValidator";
 import { ListValidator } from "../validator/commonValidator";
@@ -17,6 +17,15 @@ router.get("/list", ListValidator, async (req: Request, res: Response) => {
     const { current = 1, limit = 10 } = req.query;
     const result = await getRoles(Number(current), Number(limit));
 
+    res.json(result);
+  } catch (err) {
+    handleError(res, err as Error);
+  }
+});
+
+router.get("/name-value", async (req: Request, res: Response) => {
+  try {
+    const result = await getRolesNameAndValue();
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -116,5 +125,7 @@ router.delete("/:id", async (req, res) => {
     handleError(res, err as Error);
   }
 });
+
+
 
 export default router;

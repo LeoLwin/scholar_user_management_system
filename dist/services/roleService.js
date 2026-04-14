@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRolePermissionList = exports.removePermission = exports.assignPermission = exports.deleteRole = exports.updateRole = exports.getRoles = exports.getRoleById = exports.createRoleWithPermission = exports.createRole = void 0;
+exports.getRolesNameAndValue = exports.getRolePermissionList = exports.removePermission = exports.assignPermission = exports.deleteRole = exports.updateRole = exports.getRoles = exports.getRoleById = exports.createRoleWithPermission = exports.createRole = void 0;
 const roleRepository_1 = require("../repositories/roleRepository");
 const permissionRepository_1 = require("../repositories/permissionRepository");
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
@@ -226,3 +226,14 @@ const getRolePermissionList = (roleId) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getRolePermissionList = getRolePermissionList;
+const getRolesNameAndValue = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const roles = yield (0, roleRepository_1.findAllRoles)({ skip: 0, take: 100 });
+        return responseStatus_1.default.OK(roles.map((role) => ({ label: role.name, value: role.id })));
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return responseStatus_1.default.UNKNOWN(message);
+    }
+});
+exports.getRolesNameAndValue = getRolesNameAndValue;

@@ -11,10 +11,10 @@ import { authTokenValidator } from "../MiddleWare/authMiddleWare";
 const router = express.Router();
 
 router.use("/auth", AuthController);
-router.use("/users", authTokenValidator,UserController);
-router.use("/roles", authTokenValidator,RoleController);
-router.use("/features", authTokenValidator,FeaturesController);
-router.use("/permissions", authTokenValidator,PermissionController);
+router.use("/users", authTokenValidator, UserController);
+router.use("/roles", authTokenValidator, RoleController);
+router.use("/features", authTokenValidator, FeaturesController);
+router.use("/permissions", authTokenValidator, PermissionController);
 
 
 export default router;

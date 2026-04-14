@@ -19,7 +19,6 @@ const userRepository_1 = require("../repositories/userRepository");
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
 const config_1 = __importDefault(require("../config/config"));
 const login = (credentials) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
         const { email, password } = credentials;
         console.log('email', email);
@@ -52,7 +51,7 @@ const login = (credentials) => __awaiter(void 0, void 0, void 0, function* () {
                 name: user.name,
                 email: user.email,
                 roleId: user.role_id,
-                role: (_a = user.role) === null || _a === void 0 ? void 0 : _a.name,
+                role: user.role,
             },
         }, 'Login successful');
     }

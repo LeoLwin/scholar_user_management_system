@@ -38,6 +38,7 @@ const authTokenValidator = (req, res, next) => __awaiter(void 0, void 0, void 0,
         const decoded = jsonwebtoken_1.default.verify(token, config_1.default.jwtSecrete || "secret");
         req.user = decoded;
         // Pass control to the next middleware
+        console.log("pass");
         next();
     }
     catch (error) {

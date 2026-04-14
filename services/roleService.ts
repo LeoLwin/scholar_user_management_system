@@ -249,3 +249,13 @@ export const getRolePermissionList = async (roleId: number): Promise<ResponseSta
     return StatusCode.UNKNOWN(message);
   }
 };
+
+export const getRolesNameAndValue = async () => {
+  try {
+    const roles = await findAllRoles({ skip: 0, take: 100 });
+    return StatusCode.OK(roles.map((role: any) => ({ label: role.name, value: role.id })));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return StatusCode.UNKNOWN(message);
+  }
+}

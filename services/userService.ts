@@ -25,7 +25,8 @@ export interface LoginData {
 
 export const createUser = async (data: CreateUserData): Promise<ResponseStatus> => {
   try {
-    if (!data.name || !data.username || !data.email || !data.password ||
+    console.log("data", data)
+    if (!data.name || !data.email ||
       !data.roleId || !data.phone || !data.address) {
       return StatusCode.INVALID_ARGUMENT('Missing required fields');
     }
@@ -45,7 +46,7 @@ export const createUser = async (data: CreateUserData): Promise<ResponseStatus> 
       return StatusCode.NOT_FOUND('Role not found');
     }
 
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const hashedPassword = await bcrypt.hash(config.defaultPassword, 10);
     const user = await createUserRepo({ ...data, password: hashedPassword }) as any;
 
     return StatusCode.OK(
@@ -153,7 +154,7 @@ export const getUsers = async (page: number = 1, limit: number = 10): Promise<Re
       address: user.address,
       gender: user.gender,
       isActive: user.is_active,
-      role: user.role?.name,
+      role: user.role,
     }));
 
     return StatusCode.OK({
@@ -163,6 +164,7 @@ export const getUsers = async (page: number = 1, limit: number = 10): Promise<Re
         totalPages: Math.ceil(total / limit),
         totalRecords: total,
         limit,
+        current: page
       },
     });
   } catch (error) {

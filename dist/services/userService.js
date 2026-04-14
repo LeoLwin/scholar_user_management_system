@@ -21,7 +21,8 @@ const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
 const config_1 = __importDefault(require("../config/config"));
 const createUser = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        if (!data.name || !data.username || !data.email || !data.password ||
+        console.log("data", data);
+        if (!data.name || !data.email ||
             !data.roleId || !data.phone || !data.address) {
             return responseStatus_1.default.INVALID_ARGUMENT('Missing required fields');
         }
@@ -37,7 +38,7 @@ const createUser = (data) => __awaiter(void 0, void 0, void 0, function* () {
         if (!role) {
             return responseStatus_1.default.NOT_FOUND('Role not found');
         }
-        const hashedPassword = yield bcrypt_1.default.hash(data.password, 10);
+        const hashedPassword = yield bcrypt_1.default.hash(config_1.default.defaultPassword, 10);
         const user = yield (0, userRepository_1.createUser)(Object.assign(Object.assign({}, data), { password: hashedPassword }));
         return responseStatus_1.default.OK({
             id: user.id,
@@ -123,21 +124,18 @@ const getUsers = (...args_1) => __awaiter(void 0, [...args_1], void 0, function*
             (0, userRepository_1.findAllUsers)({ skip, take: limit }),
             (0, userRepository_1.countUsers)(),
         ]);
-        const userData = users.map((user) => {
-            var _a;
-            return ({
-                id: user.id,
-                name: user.name,
-                username: user.username,
-                email: user.email,
-                roleId: user.role_id,
-                phone: user.phone,
-                address: user.address,
-                gender: user.gender,
-                isActive: user.is_active,
-                role: (_a = user.role) === null || _a === void 0 ? void 0 : _a.name,
-            });
-        });
+        const userData = users.map((user) => ({
+            id: user.id,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            roleId: user.role_id,
+            phone: user.phone,
+            address: user.address,
+            gender: user.gender,
+            isActive: user.is_active,
+            role: user.role,
+        }));
         return responseStatus_1.default.OK({
             users: userData,
             pagination: {
@@ -145,6 +143,7 @@ const getUsers = (...args_1) => __awaiter(void 0, [...args_1], void 0, function*
                 totalPages: Math.ceil(total / limit),
                 totalRecords: total,
                 limit,
+                current: page
             },
         });
     }

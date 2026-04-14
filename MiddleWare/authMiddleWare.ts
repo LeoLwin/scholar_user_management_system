@@ -2,7 +2,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import ResponseStatus from "../helper/responseStatus";
 import config from "../config/config";
 import type { NextFunction, Request, Response } from "express";
-import {JwtUserInfoType } from "../type/userType";
+import { JwtUserInfoType } from "../type/userType";
 
 interface AuthRequest extends Request {
   user?: JwtUserInfoType | JwtPayload;
@@ -39,6 +39,7 @@ export const authTokenValidator = async (
     req.user = decoded as JwtUserInfoType;
 
     // Pass control to the next middleware
+    console.log("pass")
     next();
   } catch (error: unknown) {
     const err = error as Error;

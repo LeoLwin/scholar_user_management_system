@@ -9,6 +9,7 @@ interface Config {
   password: string;
   database: string;
   jwtSecrete: string
+  defaultPassword: string
 }
 
 
@@ -21,7 +22,8 @@ const config: Config = {
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "123456",
   database: process.env.DB_NAME || "user_management",
-  jwtSecrete: process.env.JWT_SECRET || "12345578"
+  jwtSecrete: process.env.JWT_SECRET || "12345578",
+  defaultPassword: process.env.DEFAULT_PASSWORD || "12345678"
 };
 
 export default config;
