@@ -4,8 +4,7 @@ import express from "express";
 import indexController from "./controller/indexController";
 import config from "./config/config";
 import { prisma } from "./helper/dbHelper";
-import { ResponseStatus } from "./helper/responseStatus";
-
+import cors from "cors"
 
 const startServer = async () => {
   try {
@@ -15,6 +14,7 @@ const startServer = async () => {
 
     // 2. Initialize Express app
     const app = express();
+    app.use(cors())
     console.log("System initialization complete.");
 
     // 3. Setup Express

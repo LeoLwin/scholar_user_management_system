@@ -51,6 +51,7 @@ const express_1 = __importDefault(require("express"));
 const indexController_1 = __importDefault(require("./controller/indexController"));
 const config_1 = __importDefault(require("./config/config"));
 const dbHelper_1 = require("./helper/dbHelper");
+const cors_1 = __importDefault(require("cors"));
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 1. Verify Database Connectivity first
@@ -58,6 +59,7 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         console.log("Database connection established.");
         // 2. Initialize Express app
         const app = (0, express_1.default)();
+        app.use((0, cors_1.default)());
         console.log("System initialization complete.");
         // 3. Setup Express
         app.use(express_1.default.json());
