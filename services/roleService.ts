@@ -97,12 +97,16 @@ export const getRoleById = async (id: number): Promise<ResponseStatus> => {
   }
 };
 
-export const getRoles = async (page: number = 1, limit: number = 10): Promise<ResponseStatus> => {
+export const getRoles = async (page: number = 1, limit: number = 10, filterName?: string): Promise<ResponseStatus> => {
   try {
     const skip = (page - 1) * limit;
+    const whereClause = filterName
+      ? { name: { contains: filterName } }
+      : {};
+
     const [roles, total] = await Promise.all([
-      findAllRoles({ skip, take: limit }),
-      countRoles(),
+      findAllRoles({ skip, take: limit, where: whereClause }),
+      countRoles(whereClause),
     ]);
 
     const roleData = roles.map((role: any) => ({

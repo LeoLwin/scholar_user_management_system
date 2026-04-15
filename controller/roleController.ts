@@ -13,9 +13,9 @@ const handleError = (res: Response, err: Error) => {
 
 router.get("/list", ListValidator, async (req: Request, res: Response) => {
   try {
-    console.log("Hit the role controller")
-    const { current = 1, limit = 10 } = req.query;
-    const result = await getRoles(Number(current), Number(limit));
+    const { current = 1, limit = 10, name } = req.query;
+
+    const result = await getRoles(Number(current), Number(limit), name as string);
 
     res.json(result);
   } catch (err) {

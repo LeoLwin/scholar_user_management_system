@@ -29,5 +29,5 @@ export interface UpdateUserData {
     phone?: string;
     address?: string;
     gender?: Gender;
-    is_active?: boolean;
+    isActive?: boolean;
 }

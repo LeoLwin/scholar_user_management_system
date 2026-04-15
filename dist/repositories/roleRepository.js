@@ -32,7 +32,8 @@ exports.findRoleByName = findRoleByName;
 const findAllRoles = (options) => prismaClient_1.default.role.findMany({
     skip: options === null || options === void 0 ? void 0 : options.skip,
     take: options === null || options === void 0 ? void 0 : options.take,
-    where: options === null || options === void 0 ? void 0 : options.where,
+    // where: { ...options?.where, id: { not: 1 } },
+    where: Object.assign({ id: { not: 1 } }, options === null || options === void 0 ? void 0 : options.where),
     include: Object.assign(Object.assign({}, roleInclude), options === null || options === void 0 ? void 0 : options.include),
 });
 exports.findAllRoles = findAllRoles;
@@ -47,7 +48,9 @@ const deleteRole = (id) => prismaClient_1.default.role.delete({
     include: roleInclude,
 });
 exports.deleteRole = deleteRole;
-const countRoles = (where) => prismaClient_1.default.role.count({ where });
+const countRoles = (where) => prismaClient_1.default.role.count({
+    where: Object.assign({ id: { not: 1 } }, where)
+});
 exports.countRoles = countRoles;
 const assignPermissionToRole = (roleId, permissionId) => prismaClient_1.default.rolePermission.create({
     data: {

@@ -23,9 +23,9 @@ export const CreateRoleValidator = [
     .notEmpty().withMessage("name is required")
     .isString().withMessage("name must be a string"),
 
-  body("permissionId")
-    .notEmpty().withMessage("permissionId is required")
-    .isInt({ min: 1 }).withMessage("permissionId must be a positive integer"),
+  // body("permissionId")
+  //   .notEmpty().withMessage("permissionId is required")
+  //   .isInt({ min: 1 }).withMessage("permissionId must be a positive integer"),
 
   handleValidation
 ];

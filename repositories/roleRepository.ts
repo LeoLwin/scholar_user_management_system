@@ -37,11 +37,13 @@ export const findAllRoles = (options?: {
   take?: number;
   where?: any;
   include?: any;
+  filter?: any
 }): Promise<Role[]> =>
   prisma.role.findMany({
     skip: options?.skip,
     take: options?.take,
-    where: options?.where,
+    // where: { ...options?.where, id: { not: 1 } },
+    where: { id: { not: 1 }, ...options?.where },
     include: {
       ...roleInclude,
       ...options?.include,
@@ -64,7 +66,9 @@ export const deleteRole = (id: number): Promise<Role> =>
   });
 
 export const countRoles = (where?: any): Promise<number> =>
-  prisma.role.count({ where });
+  prisma.role.count({
+    where: { id: { not: 1 }, ...where }
+  });
 
 export const assignPermissionToRole = (roleId: number, permissionId: number): Promise<RolePermission> =>
   prisma.rolePermission.create({

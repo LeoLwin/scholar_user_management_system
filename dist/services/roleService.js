@@ -86,12 +86,15 @@ const getRoleById = (id) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getRoleById = getRoleById;
-const getRoles = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (page = 1, limit = 10) {
+const getRoles = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (page = 1, limit = 10, filterName) {
     try {
         const skip = (page - 1) * limit;
+        const whereClause = filterName
+            ? { name: { contains: filterName } }
+            : {};
         const [roles, total] = yield Promise.all([
-            (0, roleRepository_1.findAllRoles)({ skip, take: limit }),
-            (0, roleRepository_1.countRoles)(),
+            (0, roleRepository_1.findAllRoles)({ skip, take: limit, where: whereClause }),
+            (0, roleRepository_1.countRoles)(whereClause),
         ]);
         const roleData = roles.map((role) => ({
             id: role.id,

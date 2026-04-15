@@ -52,7 +52,7 @@ export const findAllUsers = (options?: {
     } as any,
   });
 
-export const updateUser = (id: number, data: UpdateUserData): Promise<AdminUser> =>
+export const updateUser = (id: number, data: any): Promise<AdminUser> =>
   prisma.adminUser.update({
     where: { id },
     data: {

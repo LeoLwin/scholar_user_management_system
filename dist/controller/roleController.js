@@ -24,9 +24,8 @@ const handleError = (res, err) => {
 };
 router.get("/list", commonValidator_1.ListValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log("Hit the role controller");
-        const { current = 1, limit = 10 } = req.query;
-        const result = yield (0, roleService_1.getRoles)(Number(current), Number(limit));
+        const { current = 1, limit = 10, name } = req.query;
+        const result = yield (0, roleService_1.getRoles)(Number(current), Number(limit), name);
         res.json(result);
     }
     catch (err) {

@@ -200,8 +200,15 @@ export const updateUser = async (id: number, data: UpdateUserData): Promise<Resp
         return StatusCode.NOT_FOUND('Role not found');
       }
     }
+    const { isActive, ...rest } = data;
+    const updateData = {
+      ...rest,
+      is_active: isActive === true || isActive === ('true' as any),
+    }
+    console.log("updateUserData : ", updateData)
 
-    const updatedUser = await updateUserRepo(id, data) as any;
+    const updatedUser = await updateUserRepo(id, updateData) as any;
+
 
     return StatusCode.OK(
       {

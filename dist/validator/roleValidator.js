@@ -20,8 +20,8 @@ exports.CreateRoleValidator = [
     (0, express_validator_1.body)("name")
         .notEmpty().withMessage("name is required")
         .isString().withMessage("name must be a string"),
-    (0, express_validator_1.body)("permissionId")
-        .notEmpty().withMessage("permissionId is required")
-        .isInt({ min: 1 }).withMessage("permissionId must be a positive integer"),
+    // body("permissionId")
+    //   .notEmpty().withMessage("permissionId is required")
+    //   .isInt({ min: 1 }).withMessage("permissionId must be a positive integer"),
     exports.handleValidation
 ];
