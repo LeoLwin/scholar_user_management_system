@@ -78,3 +78,34 @@ export const findUnassignedPermissions = async (roleId: number) => {
     },
   });
 };
+
+
+export const updatePermissionAtomic = async (
+  id: number,
+  data: { name: string; featureId: number; roleIds: number[] }
+) => {
+  return await prisma.$transaction(async (tx) => {
+    const updatedPermission = await tx.permission.update({
+      where: { id },
+      data: {
+        name: data.name,
+        feature_id: data.featureId,
+      },
+    });
+
+    await tx.rolePermission.deleteMany({
+      where: { permissions_id: id },
+    });
+
+    if (data.roleIds.length > 0) {
+      await tx.rolePermission.createMany({
+        data: data.roleIds.map((roleId) => ({
+          role_id: roleId,
+          permissions_id: id,
+        })),
+      });
+    }
+
+    return updatedPermission;
+  });
+};

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAvailablePermissionsForRole = exports.deletePermission = exports.updatePermission = exports.getPermissions = exports.getPermissionById = exports.createPermission = void 0;
+exports.updatePermissionService = exports.getAvailablePermissionsForRole = exports.deletePermission = exports.updatePermission = exports.getPermissions = exports.getPermissionById = exports.createPermission = void 0;
 const permissionRepository_1 = require("../repositories/permissionRepository");
 const featureRepository_1 = require("../repositories/featureRepository");
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
@@ -74,14 +74,6 @@ const getPermissions = (...args_1) => __awaiter(void 0, [...args_1], void 0, fun
             (0, permissionRepository_1.findAllPermissions)({ skip, take: limit }),
             (0, permissionRepository_1.countPermissions)(),
         ]);
-        console.log("Permissions : ");
-        // const permissionData = permissions.map((permission: any) => ({
-        //   id: permission.id,
-        //   name: permission.name,
-        //   featureId: permission.feature_id,
-        //   feature: permission.feature.name,
-        //   roleCount: permission.roles.length,
-        // }));
         const permissionData = permissions.map((permission) => ({
             id: permission.id,
             name: permission.name,
@@ -173,3 +165,27 @@ const getAvailablePermissionsForRole = (roleId) => __awaiter(void 0, void 0, voi
     }
 });
 exports.getAvailablePermissionsForRole = getAvailablePermissionsForRole;
+const updatePermissionService = (id, data) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const existingPermission = yield (0, permissionRepository_1.findPermissionById)(id);
+        if (!existingPermission) {
+            return responseStatus_1.default.NOT_FOUND('Permission not found');
+        }
+        if (data.name && data.name !== existingPermission.name) {
+            const nameExists = yield (0, permissionRepository_1.findPermissionByName)(data.name);
+            if (nameExists) {
+                return responseStatus_1.default.ALREADY_EXISTS('Permission name already exists');
+            }
+        }
+        const result = yield (0, permissionRepository_1.updatePermissionAtomic)(id, data);
+        return responseStatus_1.default.OK(result, "Permission and assigned roles updated successfully");
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : "Internal Server Error";
+        if (message.includes("P2002")) {
+            return responseStatus_1.default.ALREADY_EXISTS("This permission name already exists for the selected feature.");
+        }
+        return responseStatus_1.default.UNKNOWN(message);
+    }
+});
+exports.updatePermissionService = updatePermissionService;

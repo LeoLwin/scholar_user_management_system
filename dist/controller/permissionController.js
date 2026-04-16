@@ -132,4 +132,21 @@ router.get("/roles-permissions/:roleId", (req, res) => __awaiter(void 0, void 0,
         handleError(res, err);
     }
 }));
+router.put("/update-permission/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const id = Number(req.params.id);
+        const { name, featureId, roleIds } = req.body;
+        if (!id) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Permission ID is required"));
+        }
+        if (!name || !featureId || !Array.isArray(roleIds)) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Required fields are missing or invalid"));
+        }
+        const result = yield (0, permissionService_1.updatePermissionService)(id, { name, featureId, roleIds });
+        res.json(result);
+    }
+    catch (err) {
+        handleError(res, err);
+    }
+}));
 exports.default = router;

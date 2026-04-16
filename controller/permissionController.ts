@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { getPermissions, getPermissionById, createPermission, updatePermission, deletePermission, getAvailablePermissionsForRole } from "../services/permissionService";
+import { getPermissions, getPermissionById, createPermission, updatePermission, deletePermission, getAvailablePermissionsForRole, updatePermissionService } from "../services/permissionService";
 import { assignPermission, getRolePermissionList } from "../services/roleService";
 import ResponseStatus from "../helper/responseStatus";
 
@@ -119,6 +119,26 @@ router.get("/roles-permissions/:roleId", async (req: Request, res: Response) => 
       return res.json(ResponseStatus.INVALID_ARGUMENT("Role ID is required"));
     }
     const result = await getRolePermissionList(roleId);
+    res.json(result);
+  } catch (err) {
+    handleError(res, err as Error);
+  }
+});
+
+router.put("/update-permission/:id", async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const { name, featureId, roleIds } = req.body;
+
+    if (!id) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Permission ID is required"));
+    }
+    if (!name || !featureId || !Array.isArray(roleIds)) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Required fields are missing or invalid"));
+    }
+
+    const result = await updatePermissionService(id, { name, featureId, roleIds });
+
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);

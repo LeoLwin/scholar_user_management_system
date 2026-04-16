@@ -7,6 +7,7 @@ import {
   deletePermission as deletePermissionRepo,
   countPermissions,
   findUnassignedPermissions,
+  updatePermissionAtomic,
 
 } from '../repositories/permissionRepository';
 import { findFeatureById } from '../repositories/featureRepository';
@@ -78,16 +79,6 @@ export const getPermissions = async (page: number = 1, limit: number = 10): Prom
       findAllPermissions({ skip, take: limit }),
       countPermissions(),
     ]);
-
-    console.log("Permissions : ",)
-
-    // const permissionData = permissions.map((permission: any) => ({
-    //   id: permission.id,
-    //   name: permission.name,
-    //   featureId: permission.feature_id,
-    //   feature: permission.feature.name,
-    //   roleCount: permission.roles.length,
-    // }));
 
     const permissionData = permissions.map((permission: any) => ({
       id: permission.id,
@@ -187,6 +178,39 @@ export const getAvailablePermissionsForRole = async (roleId: number): Promise<Re
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
+    return StatusCode.UNKNOWN(message);
+  }
+};
+
+
+export const updatePermissionService = async (
+  id: number,
+  data: { name: string; featureId: number; roleIds: number[] }
+): Promise<ResponseStatus> => {
+  try {
+    const existingPermission = await findPermissionById(id) as any;
+    if (!existingPermission) {
+      return StatusCode.NOT_FOUND('Permission not found');
+    }
+
+    if (data.name && data.name !== existingPermission.name) {
+      const nameExists = await findPermissionByName(data.name);
+      if (nameExists) {
+        return StatusCode.ALREADY_EXISTS('Permission name already exists');
+      }
+    }
+
+    const result = await updatePermissionAtomic(id, data);
+
+    return StatusCode.OK(
+      result,
+      "Permission and assigned roles updated successfully"
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    if (message.includes("P2002")) {
+      return StatusCode.ALREADY_EXISTS("This permission name already exists for the selected feature.");
+    }
     return StatusCode.UNKNOWN(message);
   }
 };

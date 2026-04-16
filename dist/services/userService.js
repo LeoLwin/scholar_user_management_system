@@ -51,6 +51,7 @@ const createUser = (data) => __awaiter(void 0, void 0, void 0, function* () {
         }
         const hashedPassword = yield bcrypt_1.default.hash(config_1.default.defaultPassword, 10);
         const user = yield (0, userRepository_1.createUser)(Object.assign(Object.assign({}, data), { password: hashedPassword }));
+        console.log("userCreate : ", user);
         return responseStatus_1.default.OK({
             id: user.id,
             name: user.name,

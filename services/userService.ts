@@ -48,6 +48,7 @@ export const createUser = async (data: CreateUserData): Promise<ResponseStatus> 
 
     const hashedPassword = await bcrypt.hash(config.defaultPassword, 10);
     const user = await createUserRepo({ ...data, password: hashedPassword }) as any;
+    console.log("userCreate : ", user)
 
     return StatusCode.OK(
       {

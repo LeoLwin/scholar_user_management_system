@@ -143,20 +143,42 @@ const updateRole = (id, data) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.updateRole = updateRole;
+// export const deleteRole = async (id: number): Promise<ResponseStatus> => {
+//   try {
+//     const role = await findRoleById(id) as any;
+//     if (!role) {
+//       return StatusCode.NOT_FOUND('Role not found');
+//     }
+//     if (role.adminUsers.length > 0) {
+//       return StatusCode.FAILED_PRECONDITION('Cannot delete role with assigned users');
+//     }
+//     await deleteRoleRepo(id);
+//     return StatusCode.OK(null, 'Role deleted successfully');
+//   } catch (error) {
+//     const message = error instanceof Error ? error.message : 'Unknown error';
+//     return StatusCode.UNKNOWN(message);
+//   }
+// };
 const deleteRole = (id) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const role = yield (0, roleRepository_1.findRoleById)(id);
         if (!role) {
             return responseStatus_1.default.NOT_FOUND('Role not found');
         }
-        if (role.adminUsers.length > 0) {
-            return responseStatus_1.default.FAILED_PRECONDITION('Cannot delete role with assigned users');
+        if (role.adminUsers && role.adminUsers.length > 0) {
+            return responseStatus_1.default.FAILED_PRECONDITION('Cannot delete role: It is currently assigned to users.');
+        }
+        if (role.rolePermissions && role.rolePermissions.length > 0) {
+            return responseStatus_1.default.FAILED_PRECONDITION('Cannot delete role: It still has assigned permissions. Please unassign them first.');
         }
         yield (0, roleRepository_1.deleteRole)(id);
         return responseStatus_1.default.OK(null, 'Role deleted successfully');
     }
     catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
+        if (message.includes("Foreign key constraint violated")) {
+            return responseStatus_1.default.FAILED_PRECONDITION('This role cannot be deleted because it is still linked to other data.');
+        }
         return responseStatus_1.default.UNKNOWN(message);
     }
 });

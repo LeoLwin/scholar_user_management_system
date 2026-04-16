@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findUnassignedPermissions = exports.countPermissions = exports.deletePermission = exports.updatePermission = exports.findAllPermissions = exports.findPermissionByName = exports.findPermissionById = exports.createPermission = void 0;
+exports.updatePermissionAtomic = exports.findUnassignedPermissions = exports.countPermissions = exports.deletePermission = exports.updatePermission = exports.findAllPermissions = exports.findPermissionByName = exports.findPermissionById = exports.createPermission = void 0;
 const prismaClient_1 = __importDefault(require("../helper/prismaClient"));
 const permissionInclude = {
     feature: true,
@@ -69,3 +69,27 @@ const findUnassignedPermissions = (roleId) => __awaiter(void 0, void 0, void 0, 
     });
 });
 exports.findUnassignedPermissions = findUnassignedPermissions;
+const updatePermissionAtomic = (id, data) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield prismaClient_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        const updatedPermission = yield tx.permission.update({
+            where: { id },
+            data: {
+                name: data.name,
+                feature_id: data.featureId,
+            },
+        });
+        yield tx.rolePermission.deleteMany({
+            where: { permissions_id: id },
+        });
+        if (data.roleIds.length > 0) {
+            yield tx.rolePermission.createMany({
+                data: data.roleIds.map((roleId) => ({
+                    role_id: roleId,
+                    permissions_id: id,
+                })),
+            });
+        }
+        return updatedPermission;
+    }));
+});
+exports.updatePermissionAtomic = updatePermissionAtomic;
