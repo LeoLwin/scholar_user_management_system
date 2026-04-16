@@ -100,7 +100,7 @@ const DEADLINE_EXCEEDED = (message?: string): ResponseStatus => ({
   message: message || "Request deadline exceeded",
 });
 
-export default  {
+export default {
   OK,
   SEE_OTHER,
   REDIRECT,

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePermission = exports.updatePermission = exports.getPermissions = exports.getPermissionById = exports.createPermission = void 0;
+exports.getAvailablePermissionsForRole = exports.deletePermission = exports.updatePermission = exports.getPermissions = exports.getPermissionById = exports.createPermission = void 0;
 const permissionRepository_1 = require("../repositories/permissionRepository");
 const featureRepository_1 = require("../repositories/featureRepository");
 const responseStatus_1 = __importDefault(require("../helper/responseStatus"));
@@ -49,13 +49,17 @@ const getPermissionById = (id) => __awaiter(void 0, void 0, void 0, function* ()
         if (!permission) {
             return responseStatus_1.default.NOT_FOUND('Permission not found');
         }
-        return responseStatus_1.default.OK({
+        const permissionData = {
             id: permission.id,
             name: permission.name,
             featureId: permission.feature_id,
             feature: permission.feature.name,
-            roleCount: permission.roles.length,
-        });
+            roles: permission.roles.map((r) => ({
+                id: r.role.id,
+                name: r.role.name,
+            })),
+        };
+        return responseStatus_1.default.OK(permissionData, "Permission fetched successfully");
     }
     catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
@@ -70,12 +74,23 @@ const getPermissions = (...args_1) => __awaiter(void 0, [...args_1], void 0, fun
             (0, permissionRepository_1.findAllPermissions)({ skip, take: limit }),
             (0, permissionRepository_1.countPermissions)(),
         ]);
+        console.log("Permissions : ");
+        // const permissionData = permissions.map((permission: any) => ({
+        //   id: permission.id,
+        //   name: permission.name,
+        //   featureId: permission.feature_id,
+        //   feature: permission.feature.name,
+        //   roleCount: permission.roles.length,
+        // }));
         const permissionData = permissions.map((permission) => ({
             id: permission.id,
             name: permission.name,
             featureId: permission.feature_id,
             feature: permission.feature.name,
-            roleCount: permission.roles.length,
+            roles: permission.roles.map((r) => ({
+                id: r.role.id,
+                name: r.role.name,
+            })),
         }));
         return responseStatus_1.default.OK({
             permissions: permissionData,
@@ -143,3 +158,18 @@ const deletePermission = (id) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deletePermission = deletePermission;
+const getAvailablePermissionsForRole = (roleId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const unassignedPermissions = yield (0, permissionRepository_1.findUnassignedPermissions)(roleId);
+        const permissionOptions = unassignedPermissions.map((p) => ({
+            name: p.name,
+            value: p.id,
+        }));
+        return responseStatus_1.default.OK(permissionOptions, "Available permissions fetched successfully");
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return responseStatus_1.default.UNKNOWN(message);
+    }
+});
+exports.getAvailablePermissionsForRole = getAvailablePermissionsForRole;

@@ -23,7 +23,17 @@ const handleError = (res, err) => {
 };
 router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield (0, featureService_1.getFeatures)();
+        const { current, limit, name } = req.query;
+        const result = yield (0, featureService_1.getFeatures)(Number(current), Number(limit), name);
+        res.json(result);
+    }
+    catch (err) {
+        handleError(res, err);
+    }
+}));
+router.get("/name-value", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = yield (0, featureService_1.getFeaturesNameAndValue)();
         res.json(result);
     }
     catch (err) {
@@ -55,6 +65,7 @@ router.post("/", featuresValidator_1.CreateFeaturesValidator, (req, res) => __aw
 router.put("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);
+        console.log("id : ", id);
         if (!id) {
             return res.json(responseStatus_1.default.INVALID_ARGUMENT("Feature ID is required"));
         }

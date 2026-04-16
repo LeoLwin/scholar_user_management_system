@@ -64,3 +64,17 @@ export const deletePermission = (id: number): Promise<Permission> =>
 
 export const countPermissions = (where?: any): Promise<number> =>
   prisma.permission.count({ where });
+
+// permissions.repository.ts
+
+export const findUnassignedPermissions = async (roleId: number) => {
+  return await prisma.permission.findMany({
+    where: {
+      roles: {
+        none: {
+          role_id: roleId,
+        },
+      },
+    },
+  });
+};

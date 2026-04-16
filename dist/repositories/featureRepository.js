@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.countFeatures = exports.deleteFeature = exports.updateFeature = exports.findAllFeatures = exports.findFeatureByName = exports.findFeatureById = exports.createFeature = void 0;
+exports.countFeatures = exports.deleteFeature = exports.updateFeature = exports.countAllFeatures = exports.findAllFeatures = exports.findFeatureByName = exports.findFeatureById = exports.createFeature = void 0;
 const prismaClient_1 = __importDefault(require("../helper/prismaClient"));
 const createFeature = (data) => prismaClient_1.default.feature.create({
     data: { name: data.name },
@@ -27,6 +27,8 @@ const findAllFeatures = (options) => prismaClient_1.default.feature.findMany({
     include: Object.assign({ permissions: true }, options === null || options === void 0 ? void 0 : options.include),
 });
 exports.findAllFeatures = findAllFeatures;
+const countAllFeatures = () => prismaClient_1.default.feature.count();
+exports.countAllFeatures = countAllFeatures;
 const updateFeature = (id, data) => prismaClient_1.default.feature.update({
     where: { id },
     data: Object.assign({}, (data.name && { name: data.name })),

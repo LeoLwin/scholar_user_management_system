@@ -37,6 +37,9 @@ export const findAllFeatures = (options?: {
     } as any,
   });
 
+export const countAllFeatures = (): Promise<number> =>
+  prisma.feature.count();
+
 export const updateFeature = (id: number, data: UpdateFeatureData): Promise<Feature> =>
   prisma.feature.update({
     where: { id },

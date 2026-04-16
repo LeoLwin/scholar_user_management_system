@@ -5,6 +5,7 @@ import {
   findAllFeatures,
   updateFeature as updateFeatureRepo,
   deleteFeature as deleteFeatureRepo,
+  countAllFeatures,
 
 } from '../repositories/featureRepository';
 import StatusCode from '../helper/responseStatus';
@@ -60,9 +61,29 @@ export const getFeatureById = async (id: number): Promise<ResponseStatus> => {
   }
 };
 
-export const getFeatures = async (): Promise<ResponseStatus> => {
+export const getFeatures = async (
+  page: number = 1,
+  limit: number = 10,
+  filterName?: string
+): Promise<ResponseStatus> => {
   try {
-    const features = await findAllFeatures();
+    const skip = (page - 1) * limit;
+
+    const whereClause = filterName
+      ? { name: { contains: filterName } }
+      : {};
+
+    const [features, totalCount] = await Promise.all([
+      findAllFeatures({
+        skip,
+        take: limit,
+        where: whereClause
+      }),
+      // Database တစ်ခုလုံးမှာရှိတဲ့ စုစုပေါင်းအရေအတွက်ကို repository ကနေ သီးသန့်ယူမယ်
+      countAllFeatures(),
+    ]);
+
+    console.log("Features Total :", { features, totalCount })
 
     const featureData = features.map((feature: any) => ({
       id: feature.id,
@@ -74,12 +95,22 @@ export const getFeatures = async (): Promise<ResponseStatus> => {
       permissionCount: feature.permissions.length,
     }));
 
-    return StatusCode.OK(featureData);
+    return StatusCode.OK({
+      features: featureData,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit), // Filter ကြောင့် နည်းသွားတာမျိုးမဟုတ်ဘဲ absolute total နဲ့ တွက်တာဖြစ်လို့ page အရေအတွက် အပြည့်ပြနေမှာပါ
+        totalRecords: totalCount, // Database ထဲက အားလုံးပေါင်း count
+        limit,
+      },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return StatusCode.UNKNOWN(message);
   }
 };
+
+
 
 export const updateFeature = async (id: number, data: UpdateFeatureData): Promise<ResponseStatus> => {
   try {
@@ -129,3 +160,16 @@ export const deleteFeature = async (id: number): Promise<ResponseStatus> => {
     return StatusCode.UNKNOWN(message);
   }
 };
+export const getFeaturesNameAndValue = async (): Promise<ResponseStatus> => {
+  try {
+    const features = await findAllFeatures({ skip: 0, take: 1000 });
+    const featureNameValueData = features.map((feature: any) => ({
+      name: feature.name,
+      value: feature.id,
+    }));
+    return StatusCode.OK(featureNameValueData, "Features fetched successfully");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return StatusCode.UNKNOWN(message);
+  }
+}

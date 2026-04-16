@@ -6,6 +6,7 @@ import {
   updatePermission as updatePermissionRepo,
   deletePermission as deletePermissionRepo,
   countPermissions,
+  findUnassignedPermissions,
 
 } from '../repositories/permissionRepository';
 import { findFeatureById } from '../repositories/featureRepository';
@@ -53,13 +54,17 @@ export const getPermissionById = async (id: number): Promise<ResponseStatus> => 
       return StatusCode.NOT_FOUND('Permission not found');
     }
 
-    return StatusCode.OK({
+    const permissionData = {
       id: permission.id,
       name: permission.name,
       featureId: permission.feature_id,
       feature: permission.feature.name,
-      roleCount: permission.roles.length,
-    });
+      roles: permission.roles.map((r: { role_id: number, permissiosn_id: number, role: { id: number, name: string } }) => ({
+        id: r.role.id,
+        name: r.role.name,
+      })),
+    };
+    return StatusCode.OK(permissionData, "Permission fetched successfully");
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return StatusCode.UNKNOWN(message);
@@ -74,12 +79,25 @@ export const getPermissions = async (page: number = 1, limit: number = 10): Prom
       countPermissions(),
     ]);
 
+    console.log("Permissions : ",)
+
+    // const permissionData = permissions.map((permission: any) => ({
+    //   id: permission.id,
+    //   name: permission.name,
+    //   featureId: permission.feature_id,
+    //   feature: permission.feature.name,
+    //   roleCount: permission.roles.length,
+    // }));
+
     const permissionData = permissions.map((permission: any) => ({
       id: permission.id,
       name: permission.name,
       featureId: permission.feature_id,
       feature: permission.feature.name,
-      roleCount: permission.roles.length,
+      roles: permission.roles.map((r: { role_id: number, permissiosn_id: number, role: { id: number, name: string } }) => ({
+        id: r.role.id,
+        name: r.role.name,
+      })),
     }));
 
     return StatusCode.OK({
@@ -148,6 +166,25 @@ export const deletePermission = async (id: number): Promise<ResponseStatus> => {
 
     await deletePermissionRepo(id);
     return StatusCode.OK(null, 'Permission deleted successfully');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return StatusCode.UNKNOWN(message);
+  }
+};
+
+export const getAvailablePermissionsForRole = async (roleId: number): Promise<ResponseStatus> => {
+  try {
+    const unassignedPermissions = await findUnassignedPermissions(roleId);
+
+    const permissionOptions = unassignedPermissions.map((p) => ({
+      name: p.name,
+      value: p.id,
+    }));
+
+    return StatusCode.OK(
+      permissionOptions,
+      "Available permissions fetched successfully"
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return StatusCode.UNKNOWN(message);

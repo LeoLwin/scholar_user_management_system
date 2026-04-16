@@ -31,6 +31,21 @@ router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         handleError(res, err);
     }
 }));
+router.get("/name-value", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Call name-value");
+    try {
+        const { roleId } = req.query;
+        console.log("RoleId : ", roleId);
+        if (!roleId) {
+            return res.json(responseStatus_1.default.INVALID_ARGUMENT("Role's id is required!"));
+        }
+        const result = yield (0, permissionService_1.getAvailablePermissionsForRole)(Number(roleId));
+        res.json(result);
+    }
+    catch (err) {
+        handleError(res, err);
+    }
+}));
 router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = Number(req.params.id);

@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { getPermissions, getPermissionById, createPermission, updatePermission, deletePermission } from "../services/permissionService";
+import { getPermissions, getPermissionById, createPermission, updatePermission, deletePermission, getAvailablePermissionsForRole } from "../services/permissionService";
 import { assignPermission, getRolePermissionList } from "../services/roleService";
 import ResponseStatus from "../helper/responseStatus";
 
@@ -14,6 +14,21 @@ router.get("/list", async (req: Request, res: Response) => {
   try {
     const { current = 1, limit = 10 } = req.query;
     const result = await getPermissions(Number(current), Number(limit));
+    res.json(result);
+  } catch (err) {
+    handleError(res, err as Error);
+  }
+});
+
+router.get("/name-value", async (req: Request, res: Response) => {
+  console.log("Call name-value")
+  try {
+    const { roleId } = req.query;
+    console.log("RoleId : ", roleId)
+    if (!roleId) {
+      return res.json(ResponseStatus.INVALID_ARGUMENT("Role's id is required!"))
+    }
+    const result = await getAvailablePermissionsForRole(Number(roleId));
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -109,5 +124,7 @@ router.get("/roles-permissions/:roleId", async (req: Request, res: Response) => 
     handleError(res, err as Error);
   }
 });
+
+
 
 export default router;

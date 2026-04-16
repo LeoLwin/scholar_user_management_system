@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { getFeatures, getFeatureById, createFeature, updateFeature, deleteFeature } from "../services/featureService";
+import { getFeatures, getFeatureById, createFeature, updateFeature, deleteFeature, getFeaturesNameAndValue } from "../services/featureService";
 import ResponseStatus from "../helper/responseStatus";
 import { ListValidator } from "../validator/commonValidator";
 import { CreateFeaturesValidator } from "../validator/featuresValidator";
@@ -13,7 +13,17 @@ const handleError = (res: Response, err: Error) => {
 
 router.get("/list", async (req: Request, res: Response) => {
   try {
-    const result = await getFeatures();
+    const { current, limit, name } = req.query
+    const result = await getFeatures(Number(current), Number(limit), name as string);
+    res.json(result);
+  } catch (err) {
+    handleError(res, err as Error);
+  }
+});
+
+router.get("/name-value", async (req: Request, res: Response) => {
+  try {
+    const result = await getFeaturesNameAndValue();
     res.json(result);
   } catch (err) {
     handleError(res, err as Error);
@@ -45,6 +55,7 @@ router.post("/", CreateFeaturesValidator, async (req: Request, res: Response) =>
 router.put("/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
+    console.log("id : ", id);
     if (!id) {
       return res.json(ResponseStatus.INVALID_ARGUMENT("Feature ID is required"));
     }
