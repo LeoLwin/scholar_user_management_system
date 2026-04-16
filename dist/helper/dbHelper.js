@@ -4,12 +4,12 @@ exports.prisma = void 0;
 require("dotenv/config");
 const adapter_mariadb_1 = require("@prisma/adapter-mariadb");
 const client_1 = require("../generated/prisma/client");
-console.log("Database : ", {
-    host: process.env.DATABASE_HOST,
-    user: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE_NAME,
-});
+// console.log("Database : ", {
+//   host: process.env.DATABASE_HOST,
+//   user: process.env.DATABASE_USER,
+//   password: process.env.DATABASE_PASSWORD,
+//   database: process.env.DATABASE_NAME,
+// })
 const adapter = new adapter_mariadb_1.PrismaMariaDb({
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USER,
