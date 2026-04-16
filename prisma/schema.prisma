@@ -39,7 +39,7 @@ model Permission {
   feature_id Int
   feature    Feature          @relation(fields: [feature_id], references: [id])
   roles      RolePermission[]
-
+@@unique([name, feature_id], name: "permission_unique_name_feature")
   @@index([feature_id], map: "permissions_feature_id_fkey")
   @@map("permissions")
 }
